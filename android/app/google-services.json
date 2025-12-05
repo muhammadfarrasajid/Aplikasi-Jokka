@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "575263779734",
+    "project_id": "aplikasi-jokka",
+    "storage_bucket": "aplikasi-jokka.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:575263779734:android:0bfc74cc8f607493184bb7",
+        "android_client_info": {
+          "package_name": "com.example.jokka_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkcke77XPN6gDJpquKZcN0MWoXRFX9yB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
