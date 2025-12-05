@@ -20,11 +20,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const Scaffold(
         body: Center(
-          child: Text(
-            'Jokka App\nManual Connection Ready!',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
+          child: Text('Jokka App Ready'),
         ),
       ),
     );
