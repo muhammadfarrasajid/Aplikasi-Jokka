@@ -1,23 +1,59 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
-
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService {
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  NotificationService._internal();
 
-  Future<void> initNotifications() async {
-    await _firebaseMessaging.requestPermission();
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
 
-    final fcmToken = await _firebaseMessaging.getToken();
-    print('Token FCM: $fcmToken');
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  bool _initialized = false;
+  bool _welcomeShown = false; // <--- TAMBAHAN: flag global
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('=== NOTIFIKASI MASUK ===');
-      print('Judul: ${message.notification?.title}');
-      print('Isi: ${message.notification?.body}');
-    });
+  Future<void> init() async {
+    if (_initialized) return;
+
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const initializationSettings = InitializationSettings(android: androidInit);
+
+    await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+    final androidPlugin = _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
+    await androidPlugin?.requestNotificationsPermission();
+
+    _initialized = true;
+  }
+
+  // dipanggil dari mana saja, tapi keluar notif cuma sekali
+  Future<void> showWelcomeNotificationOnce() async {
+    if (_welcomeShown) return;
+    _welcomeShown = true;
+    await _showWelcomeNotification();
+  }
+
+  // method internal, jangan dipanggil langsung dari luar
+  Future<void> _showWelcomeNotification() async {
+    const androidDetails = AndroidNotificationDetails(
+      'jokka_channel_id',
+      'Jokka Notifications',
+      channelDescription: 'Notifikasi dari aplikasi Jokka',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const notifDetails = NotificationDetails(android: androidDetails);
+
+    await _flutterLocalNotificationsPlugin.show(
+      1,
+      'Selamat datang di Jokka',
+      'Temukan destinasi dan event menarik di Makassar.',
+      notifDetails,
+    );
   }
 }
