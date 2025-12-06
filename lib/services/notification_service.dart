@@ -10,8 +10,8 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _initialized = false;
-  bool _welcomeShown = false; // <--- TAMBAHAN: flag global
 
+  /// Inisialisasi plugin notifikasi
   Future<void> init() async {
     if (_initialized) return;
 
@@ -20,25 +20,21 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
+    _initialized = true;
+  }
+
+  /// Minta izin notifikasi ke sistem (Android 13+)
+  Future<void> requestPermission() async {
     final androidPlugin = _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
 
     await androidPlugin?.requestNotificationsPermission();
-
-    _initialized = true;
   }
 
-  // dipanggil dari mana saja, tapi keluar notif cuma sekali
-  Future<void> showWelcomeNotificationOnce() async {
-    if (_welcomeShown) return;
-    _welcomeShown = true;
-    await _showWelcomeNotification();
-  }
-
-  // method internal, jangan dipanggil langsung dari luar
-  Future<void> _showWelcomeNotification() async {
+  /// (opsional) nanti bisa dipakai kalau mau kirim notif dari tempat lain
+  Future<void> showWelcomeNotification() async {
     const androidDetails = AndroidNotificationDetails(
       'jokka_channel_id',
       'Jokka Notifications',
@@ -51,8 +47,8 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.show(
       1,
-      'Selamat datang di Jokka',
-      'Temukan destinasi dan event menarik di Makassar.',
+      'Notifikasi Jokka aktif',
+      'Kami akan mengirim info destinasi dan event menarik untukmu.',
       notifDetails,
     );
   }
