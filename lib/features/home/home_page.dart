@@ -1,19 +1,8 @@
-// File: lib/features/home/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// --- PERBAIKAN IMPORT (JANGAN DIUBAH) ---
-
-// 1. Mengambil tema dari folder core/theme
-import '../../core/theme/app_theme.dart'; 
-
-// 2. Mengambil service (pastikan file notification_service.dart ada di folder services)
+import '../../core/theme/app_theme.dart';
 import '../../services/notification_service.dart';
-
-// 3. Mengambil halaman kuliner dari folder screen/kuliner
-// Sesuai screenshot kamu, folder kuliner ada di dalam 'screen', bukan 'features'
-import '../../screen/kuliner/kuliner_screen.dart'; 
+import '../../screen/kuliner/kuliner_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,8 +12,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
-
   final List<Map<String, String>> floatingMenus = [
     {'icon': 'top', 'label': 'Top Wisata'},
     {'icon': 'event', 'label': 'Event'},
@@ -42,9 +29,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _requestNotificationPermissionOnce() async {
     final prefs = await SharedPreferences.getInstance();
     final alreadyRequested = prefs.getBool('notifications_permission_requested') ?? false;
-
     if (alreadyRequested) return;
-
     await prefs.setBool('notifications_permission_requested', true);
     await NotificationService().requestPermission();
   }
@@ -52,32 +37,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: JokkaColors.background, // Sekarang ini tidak akan error
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: JokkaColors.primary,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'News'),
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
-        ],
-      ),
-
+      backgroundColor: JokkaColors.background,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
             const SizedBox(height: 80),
-
-            // Pilihan Jokka
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -102,10 +68,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Top 5 Destinasi
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: const Text("Top 5 Destinasi Gammara", style: headingStyle),
@@ -120,10 +83,7 @@ class _HomePageState extends State<HomePage> {
                 itemBuilder: (context, index) => _buildHorizontalCard(),
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Event Bulan Ini
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: const Text("Jokka Event Pada Bulan Ini", style: headingStyle),
@@ -173,9 +133,19 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Align(
-                alignment: Alignment.topRight,
-                child: Icon(Icons.person_outline, color: Colors.white, size: 28),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // --- BAGIAN LOGO GAMBAR ---
+                  // Ganti 'logo_jokka.png' dengan nama file kamu yang sebenarnya
+                  Image.asset(
+                    'assets/images/logo_jokka.png',
+                    height: 40, // Atur tinggi logo di sini agar pas
+                    fit: BoxFit.contain,
+                  ),
+                  // ---------------------------
+                  const Icon(Icons.person_outline, color: Colors.white, size: 28),
+                ],
               ),
               const SizedBox(height: 10),
               const Text(
@@ -213,10 +183,9 @@ class _HomePageState extends State<HomePage> {
               return GestureDetector(
                 onTap: () {
                   if (menu['label'] == 'Kuliner') {
-                    // PENTING: Pastikan nama class di kuliner_screen.dart adalah 'KulinerScreen'
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const KulinerScreen()), 
+                      MaterialPageRoute(builder: (context) => const KulinerScreen()),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Menu ${menu['label']} segera hadir!")));
