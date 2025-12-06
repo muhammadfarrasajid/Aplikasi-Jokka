@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'terdekat_page.dart';
 import 'terfavorit_page.dart';
 
 class KulinerScreen extends StatelessWidget {
@@ -13,54 +12,61 @@ class KulinerScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _HeaderSection(),
-            const SizedBox(height: 30),
+            // Header (Back Button + Logo + Search)
+            const _HeaderSection(), 
+            
+            // JARAK DIPERLEBAR (Supaya tidak menabrak Search Bar)
+            const SizedBox(height: 60), 
+            
+            // --- BAGIAN TOMBOL FILTER ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TerdekatPage(),
-                          ),
-                        );
-                      },
-                      child: const _FilterButton(
-                        icon: Icons.location_on_outlined,
-                        label: "Terdekat",
-                      ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TerfavoritPage(),
                     ),
+                  );
+                },
+                child: Container(
+                  height: 60,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      )
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TerfavoritPage(),
-                          ),
-                        );
-                      },
-                      child: const _FilterButton(
-                        icon: Icons.star_border,
-                        label: "Terfavorit",
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.star_border, size: 28, color: Color(0xFFE53935)), 
+                      SizedBox(width: 10),
+                      Text(
+                        "Lihat Kuliner Terfavorit",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
+            
             const SizedBox(height: 24),
+            
+            // --- JUDUL ---
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                "Kuliner di sekitarmu",
+                "Rekomendasi Kuliner", 
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -68,7 +74,10 @@ class KulinerScreen extends StatelessWidget {
                 ),
               ),
             ),
+            
             const SizedBox(height: 16),
+            
+            // Grid View
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: GridView.builder(
@@ -102,6 +111,7 @@ class _HeaderSection extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
+        // Background Image
         Container(
           height: 220,
           width: double.infinity,
@@ -115,25 +125,46 @@ class _HeaderSection extends StatelessWidget {
             color: Colors.black.withOpacity(0.3),
           ),
         ),
+
+        // SafeArea
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // --- BAGIAN LOGO GAMBAR ---
-                // Ganti 'logo_jokka.png' dengan nama file kamu yang sebenarnya
+                // 1. KIRI: Tombol Back
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                  ),
+                ),
+                
+                // 2. TENGAH: LOGO JOKKA
                 Image.asset(
                   'assets/images/logo_jokka.png',
-                  height: 36, // Sedikit lebih kecil di halaman inner
+                  height: 32,
                   fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                     return const Text("JOKKA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24));
+                  },
                 ),
-                // ---------------------------
-                const Icon(Icons.person_outline, color: Colors.white, size: 28),
+                
+                // 3. KANAN: KOTAK KOSONG (Dummy)
+                // Ini trik supaya Logo tetap pas di tengah. 
+                // Ukurannya disamakan dengan tombol Back (sekitar 40px)
+                const SizedBox(width: 40, height: 40),
               ],
             ),
           ),
         ),
+
         const Positioned(
           left: 20,
           top: 100,
@@ -146,6 +177,8 @@ class _HeaderSection extends StatelessWidget {
             ),
           ),
         ),
+        
+        // Search Bar
         Positioned(
           bottom: -25,
           left: 20,
@@ -177,33 +210,6 @@ class _HeaderSection extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _FilterButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _FilterButton({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 5),
-          Icon(icon, size: 28, color: Colors.black87),
-        ],
-      ),
     );
   }
 }
