@@ -1,5 +1,3 @@
-// Lokasi: lib/screen/kuliner/terfavorit_page.dart
-
 import 'package:flutter/material.dart';
 
 class TerfavoritPage extends StatelessWidget {
@@ -41,8 +39,9 @@ class TerfavoritPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      // NAVBAR DIHAPUS TOTAL DARI SINI
       body: SafeArea(
-        child: SingleChildScrollView( // Agar seluruh halaman bisa di-scroll
+        child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
@@ -50,12 +49,12 @@ class TerfavoritPage extends StatelessWidget {
               children: [
                 const SizedBox(height: 20),
                 
-                // 1. Header (Logo JOKKA & Profil)
+                // Header Baru (Back - Logo - Kosong)
                 const _SimpleHeader(),
 
                 const SizedBox(height: 24),
 
-                // 2. Judul Halaman
+                // Judul Halaman
                 const Text(
                   "Terfavorit",
                   style: TextStyle(
@@ -67,26 +66,23 @@ class TerfavoritPage extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // 3. Bagian Top 3 (Horizontal Row)
+                // Bagian Top 3 (Horizontal Row)
                 Row(
                   children: [
-                    // Item 1
                     Expanded(child: _TopRankCard(data: topThree[0])),
                     const SizedBox(width: 12),
-                    // Item 2
                     Expanded(child: _TopRankCard(data: topThree[1])),
                     const SizedBox(width: 12),
-                    // Item 3
                     Expanded(child: _TopRankCard(data: topThree[2])),
                   ],
                 ),
 
                 const SizedBox(height: 30),
 
-                // 4. List Restoran Favorit Lainnya
+                // List Restoran Favorit Lainnya
                 ListView.separated(
-                  shrinkWrap: true, // Agar bisa dalam SingleChildScrollView
-                  physics: const NeverScrollableScrollPhysics(), // Scroll ikut parent
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: favoriteList.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 16),
                   itemBuilder: (context, index) {
@@ -98,27 +94,6 @@ class TerfavoritPage extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ),
-      
-      // 5. Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        height: 80,
-        decoration: const BoxDecoration(
-          color: Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Icon(Icons.home_outlined, color: Colors.white, size: 30),
-            Icon(Icons.explore_outlined, color: Colors.white, size: 30),
-            Icon(Icons.description_outlined, color: Colors.white, size: 30),
-            Icon(Icons.bookmark_border, color: Colors.white, size: 30),
-          ],
         ),
       ),
     );
@@ -135,25 +110,34 @@ class _SimpleHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        RichText(
-          text: const TextSpan(
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: Colors.grey,
-              letterSpacing: 1.2,
+        // 1. KIRI: Tombol Back (Warna Hitam karena background putih)
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100, // Abu-abu sangat muda
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade300),
             ),
-            children: [
-              TextSpan(text: 'J'),
-              WidgetSpan(
-                child: Icon(Icons.location_on, color: Color(0xFFE53935), size: 24),
-                alignment: PlaceholderAlignment.middle,
-              ),
-              TextSpan(text: 'KKA'),
-            ],
+            child: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
           ),
         ),
-        const Icon(Icons.person_outline, color: Colors.black54, size: 28),
+        
+        // 2. TENGAH: LOGO JOKKA GAMBAR
+        Image.asset(
+          'assets/images/logo_jokka.png',
+          height: 32,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+              // Cadangan jika gambar gagal load
+              return const Text("JOKKA", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 24));
+          },
+        ),
+        
+        // 3. KANAN: KOTAK KOSONG (Dummy)
+        // Agar Logo tetap di tengah (Simetris)
+        const SizedBox(width: 42, height: 42),
       ],
     );
   }
@@ -168,7 +152,7 @@ class _TopRankCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 140, // Tinggi kartu top 3
+      height: 140, 
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.grey.shade300,
@@ -177,7 +161,6 @@ class _TopRankCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Ikon Medali / Peringkat
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
@@ -189,7 +172,6 @@ class _TopRankCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
-          // Info Text
           Column(
             children: [
               Text(
@@ -213,7 +195,7 @@ class _TopRankCard extends StatelessWidget {
   }
 }
 
-// Widget untuk List ke bawah (Sama style dengan TerdekatPage)
+// Widget untuk List ke bawah
 class _RestoListCard extends StatelessWidget {
   final Map<String, dynamic> data;
 
@@ -231,7 +213,6 @@ class _RestoListCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Placeholder Gambar
           Container(
             width: 90,
             height: 90,
@@ -241,7 +222,6 @@ class _RestoListCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          // Info Detail
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
