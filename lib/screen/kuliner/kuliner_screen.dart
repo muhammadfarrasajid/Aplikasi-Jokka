@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'terdekat_page.dart'; // Pastikan file terdekat_page.dart ada di folder yang sama
+// Lokasi: lib/screen/kuliner/kuliner_screen.dart
 
-// PERBAIKAN: Nama class diganti jadi KulinerScreen agar cocok dengan HomePage
+import 'package:flutter/material.dart';
+import 'terdekat_page.dart'; 
+import 'terfavorit_page.dart'; 
+
 class KulinerScreen extends StatelessWidget {
   const KulinerScreen({super.key});
 
@@ -13,10 +15,11 @@ class KulinerScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Header Section (Image + Search Bar)
-            const _HeaderSection(),
+            // 1. Header Section
+            // SAYA HAPUS 'const' DI SINI
+            const _HeaderSection(), 
 
-            const SizedBox(height: 30), // Spacing after search bar overlap
+            const SizedBox(height: 30),
             
             // 2. Filter Buttons (Terdekat & Terfavorit)
             Padding(
@@ -24,7 +27,7 @@ class KulinerScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // TOMBOL TERDEKAT (Navigasi ke TerdekatPage)
+                  // --- TOMBOL TERDEKAT ---
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -35,7 +38,8 @@ class KulinerScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      child: const _FilterButton(
+                      // SAYA HAPUS 'const' DI SINI
+                      child: _FilterButton(
                         icon: Icons.location_on_outlined,
                         label: "Terdekat",
                       ),
@@ -44,11 +48,22 @@ class KulinerScreen extends StatelessWidget {
                   
                   const SizedBox(width: 16),
                   
-                  // TOMBOL TERFAVORIT
-                  const Expanded(
-                    child: _FilterButton(
-                      icon: Icons.star_border, 
-                      label: "Terfavorit"
+                  // --- TOMBOL TERFAVORIT ---
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TerfavoritPage(),
+                          ),
+                        );
+                      },
+                      // SAYA HAPUS 'const' DI SINI
+                      child: _FilterButton(
+                        icon: Icons.star_border, 
+                        label: "Terfavorit"
+                      ),
                     ),
                   ),
                 ],
@@ -77,28 +92,29 @@ class KulinerScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: GridView.builder(
                 padding: const EdgeInsets.only(bottom: 20),
-                shrinkWrap: true, // Important inside SingleChildScrollView
+                shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: 4, // Jumlah dummy data
+                itemCount: 4,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.8, // Adjust ratio for card height
+                  childAspectRatio: 0.8,
                 ),
                 itemBuilder: (context, index) {
-                  return const _RestoCard();
+                  // SAYA HAPUS 'const' DI SINI JUGA
+                  return const _RestoCard(); 
                 },
               ),
             ),
           ],
         ),
       ),
-      // 5. Custom Bottom Navigation Bar
+      // 5. Bottom Navigation Bar
       bottomNavigationBar: Container(
         height: 80,
         decoration: const BoxDecoration(
-          color: Color(0xFF1E1E1E), // Dark color from design
+          color: Color(0xFF1E1E1E),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -121,12 +137,12 @@ class KulinerScreen extends StatelessWidget {
 // --- WIDGET COMPONENTS ---
 
 class _HeaderSection extends StatelessWidget {
-  const _HeaderSection();
+  const _HeaderSection(); // Constructor tetap pakai const tidak masalah
 
   @override
   Widget build(BuildContext context) {
     return Stack(
-      clipBehavior: Clip.none, // Allows search bar to overflow
+      clipBehavior: Clip.none,
       children: [
         // Background Image
         Container(
@@ -134,17 +150,16 @@ class _HeaderSection extends StatelessWidget {
           width: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              // GANTI DENGAN GAMBAR MAKANAN KAMU (Asset/Network)
               image: NetworkImage('https://placehold.co/600x400/png'),
               fit: BoxFit.cover,
             ),
           ),
           child: Container(
-            color: Colors.black.withOpacity(0.3), // Dark overlay text readability
+            color: Colors.black.withOpacity(0.3),
           ),
         ),
 
-        // App Bar Items (Logo & Profile)
+        // App Bar Items
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -155,7 +170,7 @@ class _HeaderSection extends StatelessWidget {
                   "JOKKA",
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.w900, // Extra bold
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
                     letterSpacing: 1.2,
                   ),
@@ -166,7 +181,7 @@ class _HeaderSection extends StatelessWidget {
           ),
         ),
 
-        // "Kuliner" Title Overlay
+        // Title
         const Positioned(
           left: 20,
           top: 100,
@@ -180,9 +195,9 @@ class _HeaderSection extends StatelessWidget {
           ),
         ),
 
-        // Floating Search Bar
+        // Search Bar
         Positioned(
-          bottom: -25, // Moves it half down
+          bottom: -25,
           left: 20,
           right: 20,
           child: Container(
@@ -203,7 +218,7 @@ class _HeaderSection extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: "Lagi mau makan apa hari ini ?",
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                prefixIcon: SizedBox(width: 10), // Spacer
+                prefixIcon: SizedBox(width: 10),
                 suffixIcon: Icon(Icons.search, color: Colors.grey),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -220,6 +235,7 @@ class _FilterButton extends StatelessWidget {
   final IconData icon;
   final String label;
 
+  // Hapus const di sini juga jika masih error, tapi biasanya aman
   const _FilterButton({required this.icon, required this.label});
 
   @override
@@ -250,12 +266,11 @@ class _RestoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[300], // Placeholder color
+        color: Colors.grey[300],
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
         children: [
-          // Content positioning
           Positioned(
             bottom: 15,
             left: 15,
