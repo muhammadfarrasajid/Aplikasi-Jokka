@@ -20,6 +20,18 @@ class FirestoreService {
     });
   }
 
+  Stream<List<JokkaPlace>> getTopWisata() {
+    return _db
+        .collection('places')
+        .where('category', isEqualTo: 'Wisata')
+        .orderBy('rating', descending: true)
+        .limit(5)
+        .snapshots()
+        .map((snapshot) {
+    return snapshot.docs.map((doc) => JokkaPlace.fromSnapshot(doc)).toList();
+    });
+  }
+
   Stream<List<JokkaEvent>> getEvents() {
     return _db.collection('events').orderBy('start_date').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) => JokkaEvent.fromSnapshot(doc)).toList();
