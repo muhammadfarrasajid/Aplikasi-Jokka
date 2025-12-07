@@ -17,6 +17,10 @@ dependencies:
   firebase_messaging: ^16.0.4
   flutter_local_notifications: ^17.2.4
   shared_preferences: ^2.3.2
+  firebase_storage: ^13.0.4
+  image_picker: ^1.2.1
+  provider: ^6.1.5+1
+  firebase_auth: ^6.1.2
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +32,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icons/
+    - assets/images/
 
 flutter_launcher_icons:
   android: true
