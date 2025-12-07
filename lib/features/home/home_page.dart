@@ -1,11 +1,9 @@
-// Lokasi: lib/features/home/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/notification_service.dart';
 import '../../screen/kuliner/kuliner_screen.dart';
-import '../../screen/wisata/top_wisata_page.dart'; // Import Halaman Top Wisata
+import '../../screen/wisata/top_wisata_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,7 +13,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Data Menu Kotak Mengambang
   final List<Map<String, String>> floatingMenus = [
     {'icon': 'top', 'label': 'Top Wisata'},
     {'icon': 'event', 'label': 'Event'},
@@ -25,7 +22,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Meminta izin notifikasi setelah frame pertama
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestNotificationPermissionOnce();
     });
@@ -48,10 +44,9 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section (Gambar + Search + Menu Kotak)
             _buildHeader(),
             
-            const SizedBox(height: 80), // Jarak aman untuk menu kotak
+            const SizedBox(height: 80),
             
             // BAGIAN 1: Pilihan Jokka
             Padding(
@@ -157,12 +152,20 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Logo Gambar (Jika ada assetnya)
-                  // Image.asset('assets/images/logo_jokka.png', height: 40),
-                  const Text(
-                     "JOKKA", // Placeholder Text Logo jika gambar belum ada
-                     style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  // --- REVISI: Menggunakan Gambar PNG ---
+                  Image.asset(
+                    'assets/images/logo_jokka.png',
+                    height: 40, // Ukuran disesuaikan
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback jika gambar gagal load, tampilkan teks
+                      return const Text(
+                         "JOKKA",
+                         style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                      );
+                    },
                   ),
+                  // -------------------------------------
                   const Icon(Icons.person_outline, color: Colors.white, size: 28),
                 ],
               ),
@@ -193,7 +196,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         
-        // Menu Kotak Mengambang (Navigasi Diperbaiki di Sini)
+        // Menu Kotak Mengambang
         Positioned(
           bottom: -40,
           left: 20,
@@ -203,7 +206,6 @@ class _HomePageState extends State<HomePage> {
             children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
-                  // --- LOGIKA NAVIGASI ---
                   if (menu['label'] == 'Kuliner') {
                     Navigator.push(
                       context,
@@ -217,7 +219,6 @@ class _HomePageState extends State<HomePage> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Menu ${menu['label']} segera hadir!")));
                   }
-                  // -----------------------
                 },
                 child: Container(
                   width: 100, height: 100,
