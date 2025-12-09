@@ -1,5 +1,3 @@
-// Lokasi: lib/screen/wisata/top_wisata_page.dart
-
 import 'package:flutter/material.dart';
 
 class TopWisataPage extends StatelessWidget {
@@ -17,8 +15,8 @@ class TopWisataPage extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
               
-              // 1. Header (Logo JOKKA & Profil)
-              _buildHeader(),
+              // 1. Header (Back - Logo - Kosong)
+              _buildHeader(context),
 
               const SizedBox(height: 24),
 
@@ -26,7 +24,7 @@ class TopWisataPage extends StatelessWidget {
               const Text(
                 "Top Wisata Makassar",
                 style: TextStyle(
-                  fontSize: 24, // Sesuaikan ukuran font
+                  fontSize: 24,
                   fontWeight: FontWeight.w900,
                   color: Colors.black,
                 ),
@@ -39,7 +37,7 @@ class TopWisataPage extends StatelessWidget {
                 height: 180,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: 4, // Jumlah item horizontal
+                  itemCount: 4,
                   separatorBuilder: (context, index) => const SizedBox(width: 16),
                   itemBuilder: (context, index) {
                     return Container(
@@ -63,7 +61,6 @@ class TopWisataPage extends StatelessWidget {
               const SizedBox(height: 30),
 
               // 4. List Vertical (Top 1, Top 2, Top 3)
-              // Top 1
               _buildRankItem(
                 rank: "Top 1",
                 title: "Pantai Losari",
@@ -71,7 +68,6 @@ class TopWisataPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               
-              // Top 2
               _buildRankItem(
                 rank: "Top 2",
                 title: "Benteng Rotterdam",
@@ -79,68 +75,50 @@ class TopWisataPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Top 3
               _buildRankItem(
                 rank: "Top 3",
                 title: "Masjid 99 Kubah",
                 description: "Masjid unik dengan 99 kubah yang menjadi landmark baru di kawasan Center Point of Indonesia (CPI).",
               ),
               
-              const SizedBox(height: 40), // Spasi bawah agar tidak mentok
+              const SizedBox(height: 40),
             ],
           ),
-        ),
-      ),
-      
-      // 5. Bottom Navigation Bar (Visual Saja)
-      bottomNavigationBar: Container(
-        height: 80,
-        decoration: const BoxDecoration(
-          color: Color(0xFF1E1E1E),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Icon(Icons.home_outlined, color: Colors.white, size: 30),
-            Icon(Icons.explore_outlined, color: Colors.white, size: 30),
-            Icon(Icons.description_outlined, color: Colors.white, size: 30),
-            Icon(Icons.bookmark_border, color: Colors.white, size: 30),
-          ],
         ),
       ),
     );
   }
 
-  // --- WIDGET COMPONENTS ---
-
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Logo JOKKA
-        RichText(
-          text: const TextSpan(
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: Colors.grey, 
-              letterSpacing: 1.2,
+        // 1. KIRI: Tombol Back (Seperti di Kuliner)
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade300),
             ),
-            children: [
-              TextSpan(text: 'J'),
-              WidgetSpan(
-                child: Icon(Icons.location_on, color: Color(0xFFE53935), size: 24),
-                alignment: PlaceholderAlignment.middle,
-              ),
-              TextSpan(text: 'KKA'),
-            ],
+            child: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
           ),
         ),
-        const Icon(Icons.person_outline, color: Colors.black54, size: 28),
+
+        // 2. TENGAH: Logo Jokka PNG
+        Image.asset(
+          'assets/images/logo_jokka.png',
+          height: 36,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+              return const Text("JOKKA", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 24));
+          },
+        ),
+
+        // 3. KANAN: Kotak Kosong (Dummy)
+        const SizedBox(width: 42, height: 42),
       ],
     );
   }
@@ -149,7 +127,6 @@ class TopWisataPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Badge "Top X"
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
@@ -162,19 +139,17 @@ class TopWisataPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        
-        // Card Content
+
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.black54, width: 0.5), // Border tipis hitam
+            border: Border.all(color: Colors.black54, width: 0.5),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Gambar Kiri (Placeholder)
               Container(
                 width: 100,
                 height: 100,
@@ -184,8 +159,7 @@ class TopWisataPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              
-              // Teks Kanan
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
