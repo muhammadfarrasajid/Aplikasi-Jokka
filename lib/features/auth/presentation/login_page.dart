@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 import '../../../providers/user_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,7 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _ingatSaya = false;
   bool _isPasswordVisible = false;
 
   @override
@@ -55,6 +55,13 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const RegisterPage()),
+    );
+  }
+
+  void _navigateToForgotPassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
     );
   }
 
@@ -138,27 +145,20 @@ class _LoginPageState extends State<LoginPage> {
                           validator: (value) =>
                               value!.isEmpty ? 'Password tidak boleh kosong' : null,
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: Checkbox(
-                                value: _ingatSaya,
-                                onChanged: (bool? newValue) {
-                                  setState(() {
-                                    _ingatSaya = newValue!;
-                                  });
-                                },
-                                activeColor: JokkaColors.primary,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4)),
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: GestureDetector(
+                            onTap: _navigateToForgotPassword,
+                            child: const Text(
+                              'Lupa password?',
+                              style: TextStyle(
+                                color: JokkaColors.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Text('Ingat saya', style: TextStyle(fontSize: 14)),
-                          ],
+                          ),
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
