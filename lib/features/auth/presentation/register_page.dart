@@ -1,10 +1,9 @@
-// lib/features/auth/presentation/register_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
-// Import ini sangat penting dan harus sesuai dengan lokasi file AppTheme Anda
-import '../../../core/theme/app_theme.dart'; 
+import '../../../core/theme/app_theme.dart';
+import '../../../providers/user_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -19,7 +18,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _konfirmasiPasswordController = TextEditingController();
+  final TextEditingController _konfirmasiPasswordController =
+      TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -34,58 +34,70 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Logika registrasi (Akan dieksekusi jika form valid)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registrasi Berhasil (Simulasi)')),
+      final authProvider = Provider.of<UserProvider>(context, listen: false);
+
+      final error = await authProvider.signUp(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
+
+      if (mounted) {
+        if (error == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registrasi Berhasil! Silakan Login.')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal: $error')),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    final isLoading = Provider.of<UserProvider>(context).isLoading;
 
     return Scaffold(
+      backgroundColor: JokkaColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              // Logo dan Icon Profil
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'JOKKA',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      // MENGGUNAKAN WARNA RESMI DARI JokkaColors
-                      color: JokkaColors.primary, 
-                    ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo_jokka.png',
+                    height: 60,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Text("JOKKA",
+                          style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: JokkaColors.primary));
+                    },
                   ),
-                  const Icon(Icons.person_outline),
-                ],
-              ),
-              const SizedBox(height: 48),
-
-              // Kartu Form Registrasi
-              Center(
-                child: Container(
+                ),
+                const SizedBox(height: 40),
+                Container(
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
-                    // Warna background kartu dibuat putih agar menonjol
-                    color: Colors.white, 
-                    borderRadius: BorderRadius.circular(16.0),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withOpacity(0.15),
                         spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -99,19 +111,22 @@ class _RegisterPageState extends State<RegisterPage> {
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 24),
                         _buildTextField(
                           controller: _namaLengkapController,
                           hint: 'Nama Lengkap',
-                          validator: (value) => value!.isEmpty ? 'Nama lengkap tidak boleh kosong' : null,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Wajib diisi' : null,
                         ),
                         const SizedBox(height: 16),
                         _buildTextField(
                           controller: _usernameController,
                           hint: 'Username',
-                          validator: (value) => value!.isEmpty ? 'Username tidak boleh kosong' : null,
+                          validator: (value) =>
+                              value!.isEmpty ? 'Wajib diisi' : null,
                         ),
                         const SizedBox(height: 16),
                         _buildTextField(
@@ -119,8 +134,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           hint: 'Email',
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
-                            if (value!.isEmpty) return 'Email tidak boleh kosong';
-                            if (!value.contains('@')) return 'Format email tidak valid';
+                            if (value!.isEmpty) return 'Wajib diisi';
+                            if (!value.contains('@')) return 'Email tidak valid';
                             return null;
                           },
                         ),
@@ -135,8 +150,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             });
                           },
                           validator: (value) {
-                            if (value!.isEmpty) return 'Password tidak boleh kosong';
-                            if (value.length < 6) return 'Password minimal 6 karakter';
+                            if (value!.isEmpty) return 'Wajib diisi';
+                            if (value.length < 6) return 'Min. 6 karakter';
                             return null;
                           },
                         ),
@@ -147,106 +162,75 @@ class _RegisterPageState extends State<RegisterPage> {
                           isVisible: _isConfirmPasswordVisible,
                           toggleVisibility: () {
                             setState(() {
-                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                              _isConfirmPasswordVisible =
+                                  !_isConfirmPasswordVisible;
                             });
                           },
                           validator: (value) {
-                            if (value!.isEmpty) return 'Konfirmasi password tidak boleh kosong';
-                            if (value != _passwordController.text) return 'Password tidak cocok';
+                            if (value!.isEmpty) return 'Wajib diisi';
+                            if (value != _passwordController.text)
+                              return 'Password tidak sama';
                             return null;
                           },
                         ),
                         const SizedBox(height: 24),
-
-                        // Tombol Daftar
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _submitForm,
+                            onPressed: isLoading ? null : _submitForm,
                             style: ElevatedButton.styleFrom(
-                              // MENGGUNAKAN WARNA RESMI DARI JokkaColors
-                              backgroundColor: JokkaColors.primary, 
+                              backgroundColor: JokkaColors.primary,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              elevation: 2,
                             ),
-                            child: const Text(
-                              'Daftar',
-                              style: TextStyle(fontSize: 18, color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Pemisah "atau"
-                        const Text('atau', style: TextStyle(color: Colors.grey)),
-                        const SizedBox(height: 16),
-
-                        // Tombol Register with Google
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              // Logika Google Sign-in
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              side: const BorderSide(color: Colors.grey),
-                            ),
-                            child: const Text('Register with Google', style: TextStyle(fontSize: 16, color: JokkaColors.textPrimary)),
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white, strokeWidth: 2),
+                                  )
+                                : const Text(
+                                    'Daftar',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 24),
-
-                        // Sudah punya akun? Masuk di sini
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('Sudah punya akun? '),
+                            const Text('Sudah punya akun? ',
+                                style: TextStyle(color: Colors.grey)),
                             GestureDetector(
                               onTap: () {
-                                // Navigasi ke halaman login
+                                Navigator.pop(context);
                               },
                               child: const Text(
                                 'Masuk di sini',
                                 style: TextStyle(
-                                  // MENGGUNAKAN WARNA RESMI DARI JokkaColors
-                                  color: JokkaColors.primary, 
+                                  color: JokkaColors.primary,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                            // Tombol Masuk di sini (Versi Tombol, jika diperlukan)
-                            /*
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: JokkaColors.primary,
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size.zero,
-                                elevation: 0,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text('Masuk di sini', style: TextStyle(color: Colors.white, fontSize: 12)),
-                            ),
-                            */
                           ],
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 100), 
-            ],
+              ],
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 
@@ -260,13 +244,23 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
-        hintText: hint,
+        labelText: hint,
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: Colors.grey[50],
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: JokkaColors.primary),
         ),
       ),
       validator: validator,
@@ -284,13 +278,22 @@ class _RegisterPageState extends State<RegisterPage> {
       controller: controller,
       obscureText: !isVisible,
       decoration: InputDecoration(
-        hintText: hint,
+        labelText: hint,
         filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        fillColor: Colors.grey[50],
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10.0),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: JokkaColors.primary),
         ),
         suffixIcon: IconButton(
           icon: Icon(
@@ -301,27 +304,6 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
       validator: validator,
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        border: Border(
-          top: BorderSide(color: Colors.grey, width: 0.1),
-        ),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Icon(Icons.home_outlined, color: Colors.white, size: 30),
-          Icon(Icons.explore_outlined, color: Colors.white, size: 30),
-          Icon(Icons.description_outlined, color: Colors.white, size: 30),
-          Icon(Icons.bookmark_border, color: Colors.white, size: 30),
-        ],
-      ),
     );
   }
 }
