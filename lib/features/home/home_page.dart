@@ -2,10 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+// --- IMPORT FILE PAGE LAIN ---
 import '../../core/theme/app_theme.dart';
 import '../../services/notification_service.dart';
 import '../../screen/kuliner/kuliner_screen.dart';
-import '../../screen/wisata/top_wisata_page.dart'; // Import Halaman Top Wisata
+import '../../screen/wisata/top_wisata_page.dart';
+// Import Wishlist (Naik satu folder ke features, lalu masuk wishlist)
+import '../wishlist/presentation/wishlist_page.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,6 +19,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0; // Untuk Bottom Navigation
+
   // Data Menu Kotak Mengambang
   final List<Map<String, String>> floatingMenus = [
     {'icon': 'top', 'label': 'Top Wisata'},
@@ -25,7 +31,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Meminta izin notifikasi setelah frame pertama
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestNotificationPermissionOnce();
     });
@@ -44,14 +49,46 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: JokkaColors.background,
+      
+      // --- BOTTOM NAVIGATION BAR (Navigasi Wishlist ada di sini) ---
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          // LOGIKA NAVIGASI MENU BAWAH
+          if (index == 3) { 
+            // Jika tombol ke-4 (Index 3 / Saved) ditekan -> Buka Wishlist
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const WishlistPage()),
+            );
+          } else {
+            // Selain itu, update tampilan aktif biasa
+            setState(() {
+              _selectedIndex = index;
+            });
+          }
+        },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: JokkaColors.primary,
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'), // Index 0
+          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'), // Index 1
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'News'), // Index 2
+          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'), // Index 3 (Wishlist)
+        ],
+      ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Section (Gambar + Search + Menu Kotak)
+            // Header Section
             _buildHeader(),
             
-            const SizedBox(height: 80), // Jarak aman untuk menu kotak
+            const SizedBox(height: 80),
             
             // BAGIAN 1: Pilihan Jokka
             Padding(
@@ -157,10 +194,8 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Logo Gambar (Jika ada assetnya)
-                  // Image.asset('assets/images/logo_jokka.png', height: 40),
                   const Text(
-                     "JOKKA", // Placeholder Text Logo jika gambar belum ada
+                     "JOKKA", 
                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const Icon(Icons.person_outline, color: Colors.white, size: 28),
@@ -193,7 +228,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         
-        // Menu Kotak Mengambang (Navigasi Diperbaiki di Sini)
+        // Menu Kotak Mengambang (Navigasi KULINER & TOP WISATA)
         Positioned(
           bottom: -40,
           left: 20,
@@ -203,7 +238,7 @@ class _HomePageState extends State<HomePage> {
             children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
-                  // --- LOGIKA NAVIGASI ---
+                  // --- LOGIKA NAVIGASI MENU KOTAK ---
                   if (menu['label'] == 'Kuliner') {
                     Navigator.push(
                       context,
@@ -217,7 +252,7 @@ class _HomePageState extends State<HomePage> {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Menu ${menu['label']} segera hadir!")));
                   }
-                  // -----------------------
+                  // ----------------------------------
                 },
                 child: Container(
                   width: 100, height: 100,
