@@ -1,19 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../core/theme/app_theme.dart';
 
-class DetailPlacePage extends StatelessWidget {
+class DetailPlacePage extends StatefulWidget {
   final Map<String, dynamic> placeData;
 
   const DetailPlacePage({super.key, required this.placeData});
 
   @override
+  State<DetailPlacePage> createState() => _DetailPlacePageState();
+}
+
+class _DetailPlacePageState extends State<DetailPlacePage> {
+  late GoogleMapController mapController;
+  final Set<Marker> _markers = {};
+
+  @override
   Widget build(BuildContext context) {
-    final double lat = (placeData['latitude'] ?? 0.0).toDouble();
-    final double long = (placeData['longitude'] ?? 0.0).toDouble();
+    final double lat = (widget.placeData['latitude'] ?? 0.0).toDouble();
+    final double long = (widget.placeData['longitude'] ?? 0.0).toDouble();
     final bool hasLocation = lat != 0.0 && long != 0.0;
+    
+    final LatLng placeLocation = LatLng(lat, long);
+
+    if (hasLocation) {
+      _markers.add(
+        Marker(
+          markerId: MarkerId(widget.placeData['name'] ?? 'place'),
+          position: placeLocation,
+          infoWindow: InfoWindow(
+            title: widget.placeData['name'],
+            snippet: widget.placeData['location'],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: CustomScrollView(
@@ -37,13 +58,14 @@ class DetailPlacePage extends StatelessWidget {
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Image.network(
-                placeData['imageUrl'] ?? 'https://picsum.photos/500',
+                widget.placeData['imageUrl'] ?? 'https://picsum.photos/500',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
                     Container(color: Colors.grey[300]),
               ),
             ),
           ),
+          
           SliverList(
             delegate: SliverChildListDelegate([
               Container(
@@ -61,7 +83,7 @@ class DetailPlacePage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            placeData['name'] ?? 'Tanpa Nama',
+                            widget.placeData['name'] ?? 'Tanpa Nama',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -81,7 +103,7 @@ class DetailPlacePage extends StatelessWidget {
                                   color: Colors.orange, size: 20),
                               const SizedBox(width: 4),
                               Text(
-                                (placeData['rating'] ?? 0.0).toString(),
+                                (widget.placeData['rating'] ?? 0.0).toString(),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.bold),
                               ),
@@ -98,7 +120,7 @@ class DetailPlacePage extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            placeData['location'] ?? 'Alamat tidak tersedia',
+                            widget.placeData['location'] ?? 'Alamat tidak tersedia',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         ),
@@ -111,7 +133,7 @@ class DetailPlacePage extends StatelessWidget {
                             color: Colors.green, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          placeData['price'] ?? 'Gratis',
+                          widget.placeData['price'] ?? 'Gratis',
                           style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.grey[800]),
@@ -121,20 +143,18 @@ class DetailPlacePage extends StatelessWidget {
                     const SizedBox(height: 24),
                     const Text(
                       "Deskripsi",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      placeData['description'] ?? '-',
+                      widget.placeData['description'] ?? '-',
                       style: TextStyle(color: Colors.grey[600], height: 1.5),
                       textAlign: TextAlign.justify,
                     ),
                     const SizedBox(height: 30),
                     const Text(
-                      "Lokasi Peta",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      "Lokasi Peta (Google Maps)",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -146,31 +166,18 @@ class DetailPlacePage extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: hasLocation
-                            ? FlutterMap(
-                                options: MapOptions(
-                                  initialCenter: LatLng(lat, long),
-                                  initialZoom: 15.0,
+                            ? GoogleMap(
+                                onMapCreated: (GoogleMapController controller) {
+                                  mapController = controller;
+                                },
+                                initialCameraPosition: CameraPosition(
+                                  target: placeLocation,
+                                  zoom: 15.0,
                                 ),
-                                children: [
-                                  TileLayer(
-                                    urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-                                    subdomains: const ['a', 'b', 'c', 'd'],
-                                  ),
-                                  MarkerLayer(
-                                    markers: [
-                                      Marker(
-                                        point: LatLng(lat, long),
-                                        width: 80,
-                                        height: 80,
-                                        child: const Icon(
-                                          Icons.location_on,
-                                          color: Colors.red,
-                                          size: 40,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                markers: _markers,
+                                mapType: MapType.normal,
+                                zoomControlsEnabled: true,
+                                myLocationButtonEnabled: false,
                               )
                             : const Center(
                                 child: Column(
@@ -192,35 +199,6 @@ class DetailPlacePage extends StatelessWidget {
             ]),
           ),
         ],
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: ElevatedButton(
-          onPressed: () {
-            // Nanti bisa tambah fitur 'Buka di Google Maps'
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: JokkaColors.primary,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-          child: const Text(
-            "Lihat Rute",
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ),
       ),
     );
   }
