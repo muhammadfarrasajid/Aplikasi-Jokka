@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_theme.dart'; 
 import '../../../providers/user_provider.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -15,11 +15,9 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _namaLengkapController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _konfirmasiPasswordController =
-      TextEditingController();
+  final TextEditingController _konfirmasiPasswordController = TextEditingController();
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -27,7 +25,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     _namaLengkapController.dispose();
-    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _konfirmasiPasswordController.dispose();
@@ -37,10 +34,11 @@ class _RegisterPageState extends State<RegisterPage> {
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<UserProvider>(context, listen: false);
-
+      
       final error = await authProvider.signUp(
-        _emailController.text.trim(),
+        _emailController.text.trim(), 
         _passwordController.text.trim(),
+        _namaLengkapController.text.trim()
       );
 
       if (mounted) {
@@ -78,19 +76,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     height: 60,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
-                      return const Text("JOKKA",
-                          style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: JokkaColors.primary));
+                      return const Text("JOKKA", style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: JokkaColors.primary));
                     },
                   ),
                 ),
                 const SizedBox(height: 40),
+
                 Container(
                   padding: const EdgeInsets.all(24.0),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.white, 
                     borderRadius: BorderRadius.circular(20.0),
                     boxShadow: [
                       BoxShadow(
@@ -115,18 +110,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        
                         _buildTextField(
                           controller: _namaLengkapController,
                           hint: 'Nama Lengkap',
-                          validator: (value) =>
-                              value!.isEmpty ? 'Wajib diisi' : null,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildTextField(
-                          controller: _usernameController,
-                          hint: 'Username',
-                          validator: (value) =>
-                              value!.isEmpty ? 'Wajib diisi' : null,
+                          validator: (value) => value!.isEmpty ? 'Wajib diisi' : null,
                         ),
                         const SizedBox(height: 16),
                         _buildTextField(
@@ -162,18 +150,17 @@ class _RegisterPageState extends State<RegisterPage> {
                           isVisible: _isConfirmPasswordVisible,
                           toggleVisibility: () {
                             setState(() {
-                              _isConfirmPasswordVisible =
-                                  !_isConfirmPasswordVisible;
+                              _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
                             });
                           },
                           validator: (value) {
                             if (value!.isEmpty) return 'Wajib diisi';
-                            if (value != _passwordController.text)
-                              return 'Password tidak sama';
+                            if (value != _passwordController.text) return 'Password tidak sama';
                             return null;
                           },
                         ),
                         const SizedBox(height: 24),
+
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -186,28 +173,23 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               elevation: 2,
                             ),
-                            child: isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white, strokeWidth: 2),
-                                  )
-                                : const Text(
-                                    'Daftar',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
-                                  ),
+                            child: isLoading 
+                              ? const SizedBox(
+                                  height: 20, width: 20, 
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                                )
+                              : const Text(
+                                  'Daftar',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
                           ),
                         ),
                         const SizedBox(height: 24),
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('Sudah punya akun? ',
-                                style: TextStyle(color: Colors.grey)),
+                            const Text('Sudah punya akun? ', style: TextStyle(color: Colors.grey)),
                             GestureDetector(
                               onTap: () {
                                 Navigator.pop(context);
@@ -233,7 +215,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
-
+  
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -248,8 +230,7 @@ class _RegisterPageState extends State<RegisterPage> {
         floatingLabelBehavior: FloatingLabelBehavior.auto,
         filled: true,
         fillColor: Colors.grey[50],
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -281,8 +262,7 @@ class _RegisterPageState extends State<RegisterPage> {
         labelText: hint,
         filled: true,
         fillColor: Colors.grey[50],
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
           borderSide: BorderSide(color: Colors.grey[300]!),
