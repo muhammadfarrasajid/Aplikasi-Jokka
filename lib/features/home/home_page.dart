@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../providers/user_provider.dart';
 import '../../core/theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../../services/notification_service.dart';
 import '../../screen/kuliner/kuliner_screen.dart';
 import '../../screen/wisata/top_wisata_page.dart';
 import '../../screen/admin/add_place_page.dart';
+import '../../screen/detail/detail_place_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -51,60 +53,125 @@ class _HomePageState extends State<HomePage> {
           children: [
             _buildHeader(),
             const SizedBox(height: 100),
+            
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Pilihan Jokka Minggu Ini", style: headingStyle),
+                  const Text("Pilihan Jokka Terbaru", style: headingStyle),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _buildChip("Wisata Populer", true),
-                      _buildChip("Event", false),
-                      _buildChip("Artikel", false),
+                      _buildChip("Semua", true),
+                      _buildChip("Wisata", false),
+                      _buildChip("Kuliner", false),
                     ],
                   ),
                   const SizedBox(height: 15),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 3,
-                    itemBuilder: (context, index) => _buildVerticalCard(),
+                  
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('places')
+                        .orderBy('createdAt', descending: true)
+                        .limit(5)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(child: Text("Belum ada data tempat."));
+                      }
+                      
+                      final docs = snapshot.data!.docs;
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: docs.length,
+                        itemBuilder: (context, index) {
+                          var data = docs[index].data() as Map<String, dynamic>;
+                          return _buildRealVerticalCard(data);
+                        },
+                      );
+                    },
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const Text("Top 5 Destinasi Gammara", style: headingStyle),
+              child: const Text("Destinasi Wisata", style: headingStyle),
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 20),
-                itemCount: 5,
-                itemBuilder: (context, index) => _buildHorizontalCard(),
+              height: 180,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('places')
+                    .where('category', isEqualTo: 'wisata')
+                    .limit(5)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(left: 20),
+                      child: const Text("Belum ada data wisata", style: TextStyle(color: Colors.grey)),
+                    );
+                  }
+                  final docs = snapshot.data!.docs;
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(left: 20),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                       var data = docs[index].data() as Map<String, dynamic>;
+                       return _buildRealHorizontalCard(data);
+                    },
+                  );
+                },
               ),
             ),
+            
             const SizedBox(height: 20),
-            Padding(
+
+             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child:
-                  const Text("Jokka Event Pada Bulan Ini", style: headingStyle),
+              child: const Text("Kuliner Wajib Coba", style: headingStyle),
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 20),
-                itemCount: 5,
-                itemBuilder: (context, index) =>
-                    _buildHorizontalCard(isEvent: true),
+              height: 180,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('places')
+                    .where('category', isEqualTo: 'kuliner')
+                    .limit(5)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Container(
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.only(left: 20),
+                      child: const Text("Belum ada data kuliner", style: TextStyle(color: Colors.grey)),
+                    );
+                  }
+                  final docs = snapshot.data!.docs;
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(left: 20),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                       var data = docs[index].data() as Map<String, dynamic>;
+                       return _buildRealHorizontalCard(data);
+                    },
+                  );
+                },
               ),
             ),
             const SizedBox(height: 30),
@@ -116,15 +183,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHeader() {
     final userProvider = Provider.of<UserProvider>(context);
-
     String displayName = "Jokka";
     if (userProvider.fullName.isNotEmpty) {
       List<String> words = userProvider.fullName.split(' ');
-      if (words.length >= 2) {
-        displayName = "${words[0]} ${words[1]}";
-      } else {
-        displayName = words[0];
-      }
+      displayName = words.length >= 2 ? "${words[0]} ${words[1]}" : words[0];
     }
 
     return Stack(
@@ -159,129 +221,53 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Image.asset(
-                    'assets/images/logo_jokka.png',
-                    height: 40,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Text(
-                        "JOKKA",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold),
-                      );
-                    },
+                    'assets/images/logo_jokka.png', height: 40, fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                   ),
-
                   userProvider.isAdmin
                       ? GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const AddPlacePage()),
-                            );
-                          },
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPlacePage())),
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.add,
-                                color: Colors.white, size: 28),
+                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.3), shape: BoxShape.circle),
+                            child: const Icon(Icons.add, color: Colors.white, size: 28),
                           ),
                         )
                       : GestureDetector(
                           onTap: () {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Halaman Profil sedang dikerjakan teman!")),
-                            );
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Halaman Profil sedang dikerjakan teman!")));
                           },
-                          child: const Icon(Icons.person_outline,
-                              color: Colors.white, size: 28),
+                          child: const Icon(Icons.person_outline, color: Colors.white, size: 28),
                         ),
                 ],
               ),
               const SizedBox(height: 20),
-              
-              Text(
-                "Halo, $displayName",
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text("Halo, $displayName", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white), maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 8),
-              const Text(
-                "Mau kemana hari ini?",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white70,
-                ),
-              ),
+              const Text("Mau kemana hari ini?", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white70)),
             ],
           ),
         ),
         Positioned(
-          bottom: -50,
-          left: 20,
-          right: 20,
+          bottom: -50, left: 20, right: 20,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
-                  if (menu['label'] == 'Kuliner') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const KulinerScreen()),
-                    );
-                  } else if (menu['label'] == 'Top Wisata') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const TopWisataPage()),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text("Menu ${menu['label']} segera hadir!")));
-                  }
+                  if (menu['label'] == 'Kuliner') Navigator.push(context, MaterialPageRoute(builder: (context) => const KulinerScreen()));
+                  else if (menu['label'] == 'Top Wisata') Navigator.push(context, MaterialPageRoute(builder: (context) => const TopWisataPage()));
+                  else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Menu ${menu['label']} segera hadir!")));
                 },
                 child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5))
-                    ],
-                  ),
+                  width: 100, height: 100,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))]),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        menu['label'] == 'Top Wisata'
-                            ? Icons.landscape
-                            : menu['label'] == 'Event'
-                                ? Icons.event
-                                : Icons.restaurant,
-                        color: JokkaColors.primary,
-                        size: 32,
-                      ),
+                      Icon(menu['label'] == 'Top Wisata' ? Icons.landscape : menu['label'] == 'Event' ? Icons.event : Icons.restaurant, color: JokkaColors.primary, size: 32),
                       const SizedBox(height: 10),
-                      Text(menu['label']!,
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(menu['label']!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -301,98 +287,109 @@ class _HomePageState extends State<HomePage> {
         color: isActive ? JokkaColors.primary : Colors.grey[200],
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label,
-          style: TextStyle(
-              color: isActive ? Colors.white : Colors.grey[600],
-              fontSize: 12,
-              fontWeight: FontWeight.w600)),
+      child: Text(label, style: TextStyle(color: isActive ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)),
     );
   }
 
-  Widget _buildVerticalCard() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.grey[200]!)),
-      child: Row(
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              image: const DecorationImage(
-                  image: NetworkImage('https://picsum.photos/200'),
-                  fit: BoxFit.cover),
-            ),
+  Widget _buildRealVerticalCard(Map<String, dynamic> data) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPlacePage(placeData: data),
           ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Pantai Losari",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 5),
-                Text("Ikon kota Makassar yang wajib dikunjungi saat senja.",
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-              ],
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: Colors.grey[200]!)),
+        child: Row(
+          children: [
+            Container(
+              width: 80, height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                image: DecorationImage(
+                  image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'),
+                  fit: BoxFit.cover
+                ),
+              ),
             ),
-          )
-        ],
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(data['name'] ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 5),
+                  Text(data['description'] ?? 'Tidak ada deskripsi', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.orange, size: 14),
+                      Text(" ${data['rating'] ?? 0.0}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ],
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHorizontalCard({bool isEvent = false}) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 15),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 5,
-                offset: const Offset(0, 2))
-          ]),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(15)),
-                  image: const DecorationImage(
-                      image: NetworkImage('https://picsum.photos/201'),
-                      fit: BoxFit.cover)),
-            ),
+  Widget _buildRealHorizontalCard(Map<String, dynamic> data) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPlacePage(placeData: data),
           ),
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(isEvent ? "F8 Makassar" : "Malino Highland",
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text(isEvent ? "12 Okt 2025" : "Gowa, Sulsel",
-                    style: TextStyle(color: Colors.grey[500], fontSize: 10)),
-              ],
+        );
+      },
+      child: Container(
+        width: 160,
+        margin: const EdgeInsets.only(right: 15, bottom: 5),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))
+            ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    image: DecorationImage(
+                        image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/201'),
+                        fit: BoxFit.cover
+                    )
+                ),
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(data['name'] ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(data['location'] ?? 'Lokasi tidak ada', style: TextStyle(color: Colors.grey[500], fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

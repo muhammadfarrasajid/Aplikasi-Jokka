@@ -153,9 +153,8 @@ class DetailPlacePage extends StatelessWidget {
                                 ),
                                 children: [
                                   TileLayer(
-                                    urlTemplate:
-                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    userAgentPackageName: 'com.example.app',
+                                    urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+                                    subdomains: const ['a', 'b', 'c', 'd'],
                                   ),
                                   MarkerLayer(
                                     markers: [
