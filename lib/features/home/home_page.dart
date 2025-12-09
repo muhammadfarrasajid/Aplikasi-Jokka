@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../services/notification_service.dart';
 import '../../screen/kuliner/kuliner_screen.dart';
 import '../../screen/wisata/top_wisata_page.dart';
+import '../../screen/admin/add_place_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -49,8 +50,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            const SizedBox(height: 100), 
-            
+            const SizedBox(height: 100),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
       clipBehavior: Clip.none,
       children: [
         Container(
-          height: 300, 
+          height: 300,
           width: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -150,7 +150,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
           child: Column(
@@ -173,12 +172,14 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                   ),
-                  
+
                   userProvider.isAdmin
                       ? GestureDetector(
                           onTap: () {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Menu Admin Segera Hadir!")),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const AddPlacePage()),
                             );
                           },
                           child: Container(
@@ -203,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
               const SizedBox(height: 20),
-
+              
               Text(
                 "Halo, $displayName",
                 style: const TextStyle(
@@ -226,7 +227,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-
         Positioned(
           bottom: -50,
           left: 20,
@@ -292,7 +292,7 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-  
+
   Widget _buildChip(String label, bool isActive) {
     return Container(
       margin: const EdgeInsets.only(right: 10),
