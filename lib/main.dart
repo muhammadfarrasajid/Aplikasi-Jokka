@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
-import 'features/shell/presentation/main_shell.dart';
 import 'services/notification_service.dart';
 import 'providers/user_provider.dart';
 import 'features/auth/presentation/login_page.dart';
+import 'features/home/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +52,7 @@ class AuthWrapper extends StatelessWidget {
     }
 
     if (userProvider.user != null) {
-      return const MainShell();
+      return const HomePage();
     }
 
     return const LoginPage();

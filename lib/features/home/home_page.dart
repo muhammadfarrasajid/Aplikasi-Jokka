@@ -3,17 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// --- IMPORT LAINNYA ---
 import '../../providers/user_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/notification_service.dart';
 import '../../screen/kuliner/kuliner_screen.dart';
 import '../../screen/wisata/top_wisata_page.dart';
-import '../../screen/admin/add_place_page.dart';
 import '../../screen/detail/detail_place_page.dart';
-
-// Import Event Page
 import '../../screen/event/event_page.dart';
+import '../../core/widgets/side_menu.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -49,26 +46,24 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
 
     return Scaffold(
       backgroundColor: JokkaColors.background,
+      
+      endDrawer: const SideMenu(),
 
-      // --- HEADER (APPBAR) PUTIH ---
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
         automaticallyImplyLeading: false,
-
-        // --- LOGO BARU DI SINI ---
         title: Row(
           children: [
             Image.asset(
               'assets/images/logo_jokka_header.png',
               height: 50,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => Text(
+              errorBuilder: (context, error, stackTrace) => const Text(
                 "JOKKA",
                 style: TextStyle(
                   color: JokkaColors.primary,
@@ -80,39 +75,15 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: userProvider.isAdmin
-                ? GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AddPlacePage(),
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.add_circle_outline,
-                      color: Colors.black,
-                      size: 32,
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Halaman Profil sedang dikerjakan teman!",
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Icon(
-                      Icons.account_circle_outlined,
-                      color: Colors.black,
-                      size: 32,
-                    ),
-                  ),
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.black, size: 32),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+              },
+            ),
           ),
+          const SizedBox(width: 20),
         ],
       ),
 
