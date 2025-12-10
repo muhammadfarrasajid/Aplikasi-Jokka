@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import 'register_page.dart';
 import 'forgot_password_page.dart';
 import '../../../providers/user_provider.dart';
+import '../../home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,6 +43,12 @@ class _LoginPageState extends State<LoginPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Login Berhasil!')),
           );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+          
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Gagal: $error')),
