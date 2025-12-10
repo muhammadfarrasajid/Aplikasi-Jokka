@@ -29,7 +29,6 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
 
-    // Ambil Lat Long
     final double lat = (widget.placeData['latitude'] ?? 0.0).toDouble();
     final double long = (widget.placeData['longitude'] ?? 0.0).toDouble();
     final bool hasLocation = lat != 0.0 && long != 0.0;
