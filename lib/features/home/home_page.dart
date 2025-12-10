@@ -10,6 +10,7 @@ import '../../screen/kuliner/kuliner_screen.dart';
 import '../../screen/wisata/top_wisata_page.dart';
 import '../../screen/admin/add_place_page.dart';
 import '../../screen/detail/detail_place_page.dart';
+import '../../screen/event/event_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -53,7 +54,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             _buildHeader(),
             const SizedBox(height: 100),
-            
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
@@ -69,7 +70,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 15),
-                  
+
                   StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('places')
@@ -81,9 +82,11 @@ class _HomePageState extends State<HomePage> {
                         return const Center(child: CircularProgressIndicator());
                       }
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(child: Text("Belum ada data tempat."));
+                        return const Center(
+                          child: Text("Belum ada data tempat."),
+                        );
                       }
-                      
+
                       final docs = snapshot.data!.docs;
 
                       return ListView.builder(
@@ -117,11 +120,14 @@ class _HomePageState extends State<HomePage> {
                     .limit(5)
                     .snapshots(),
                 builder: (context, snapshot) {
-                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Container(
                       alignment: Alignment.center,
                       margin: const EdgeInsets.only(left: 20),
-                      child: const Text("Belum ada data wisata", style: TextStyle(color: Colors.grey)),
+                      child: const Text(
+                        "Belum ada data wisata",
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     );
                   }
                   final docs = snapshot.data!.docs;
@@ -130,17 +136,17 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.only(left: 20),
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
-                       var data = docs[index].data() as Map<String, dynamic>;
-                       return _buildRealHorizontalCard(data);
+                      var data = docs[index].data() as Map<String, dynamic>;
+                      return _buildRealHorizontalCard(data);
                     },
                   );
                 },
               ),
             ),
-            
+
             const SizedBox(height: 20),
 
-             Padding(
+            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: const Text("Kuliner Wajib Coba", style: headingStyle),
             ),
@@ -154,11 +160,14 @@ class _HomePageState extends State<HomePage> {
                     .limit(5)
                     .snapshots(),
                 builder: (context, snapshot) {
-                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Container(
                       alignment: Alignment.center,
                       margin: const EdgeInsets.only(left: 20),
-                      child: const Text("Belum ada data kuliner", style: TextStyle(color: Colors.grey)),
+                      child: const Text(
+                        "Belum ada data kuliner",
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     );
                   }
                   final docs = snapshot.data!.docs;
@@ -167,8 +176,8 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.only(left: 20),
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
-                       var data = docs[index].data() as Map<String, dynamic>;
-                       return _buildRealHorizontalCard(data);
+                      var data = docs[index].data() as Map<String, dynamic>;
+                      return _buildRealHorizontalCard(data);
                     },
                   );
                 },
@@ -198,7 +207,8 @@ class _HomePageState extends State<HomePage> {
           decoration: const BoxDecoration(
             image: DecorationImage(
               image: NetworkImage(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Fort_Rotterdam_2012.jpg/1200px-Fort_Rotterdam_2012.jpg'),
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Fort_Rotterdam_2012.jpg/1200px-Fort_Rotterdam_2012.jpg',
+              ),
               fit: BoxFit.cover,
             ),
           ),
@@ -221,60 +231,158 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Image.asset(
-                    'assets/images/logo_jokka.png', height: 40, fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    'assets/images/logo_jokka.png',
+                    height: 40,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Text(
+                      "JOKKA",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   userProvider.isAdmin
                       ? GestureDetector(
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPlacePage())),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddPlacePage(),
+                            ),
+                          ),
                           child: Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(color: Colors.white.withOpacity(0.3), shape: BoxShape.circle),
-                            child: const Icon(Icons.add, color: Colors.white, size: 28),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                           ),
                         )
                       : GestureDetector(
                           onTap: () {
-                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Halaman Profil sedang dikerjakan teman!")));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Halaman Profil sedang dikerjakan teman!",
+                                ),
+                              ),
+                            );
                           },
-                          child: const Icon(Icons.person_outline, color: Colors.white, size: 28),
+                          child: const Icon(
+                            Icons.person_outline,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                         ),
                 ],
               ),
               const SizedBox(height: 20),
-              Text("Halo, $displayName", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white), maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(
+                "Halo, $displayName",
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
               const SizedBox(height: 8),
-              const Text("Mau kemana hari ini?", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white70)),
+              const Text(
+                "Mau kemana hari ini?",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white70,
+                ),
+              ),
             ],
           ),
         ),
         Positioned(
-          bottom: -50, left: 20, right: 20,
+          bottom: -50,
+          left: 20,
+          right: 20,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
-                  if (menu['label'] == 'Kuliner') Navigator.push(context, MaterialPageRoute(builder: (context) => const KulinerScreen()));
-                  else if (menu['label'] == 'Top Wisata') Navigator.push(context, MaterialPageRoute(builder: (context) => const TopWisataPage()));
-                  else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Menu ${menu['label']} segera hadir!")));
+                  if (menu['label'] == 'Kuliner')
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const KulinerScreen(),
+                      ),
+                    );
+                  else if (menu['label'] == 'Top Wisata')
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TopWisataPage(),
+                      ),
+                    );
+                  else if (menu['label'] == 'Event') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const EventPage(),
+                      ),
+                    );
+                  } else
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Menu ${menu['label']} segera hadir!"),
+                      ),
+                    );
                 },
                 child: Container(
-                  width: 100, height: 100,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))]),
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(menu['label'] == 'Top Wisata' ? Icons.landscape : menu['label'] == 'Event' ? Icons.event : Icons.restaurant, color: JokkaColors.primary, size: 32),
+                      Icon(
+                        menu['label'] == 'Top Wisata'
+                            ? Icons.landscape
+                            : menu['label'] == 'Event'
+                            ? Icons.event
+                            : Icons.restaurant,
+                        color: JokkaColors.primary,
+                        size: 32,
+                      ),
                       const SizedBox(height: 10),
-                      Text(menu['label']!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(
+                        menu['label']!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               );
             }).toList(),
           ),
-        )
+        ),
       ],
     );
   }
@@ -287,7 +395,14 @@ class _HomePageState extends State<HomePage> {
         color: isActive ? JokkaColors.primary : Colors.grey[200],
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: TextStyle(color: isActive ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: isActive ? Colors.white : Colors.grey[600],
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -305,18 +420,22 @@ class _HomePageState extends State<HomePage> {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.grey[200]!)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Colors.grey[200]!),
+        ),
         child: Row(
           children: [
             Container(
-              width: 80, height: 80,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
-                  image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'),
-                  fit: BoxFit.cover
+                  image: NetworkImage(
+                    data['imageUrl'] ?? 'https://picsum.photos/200',
+                  ),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
@@ -325,19 +444,36 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(data['name'] ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    data['name'] ?? 'Tanpa Nama',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 5),
-                  Text(data['description'] ?? 'Tidak ada deskripsi', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  Text(
+                    data['description'] ?? 'Tidak ada deskripsi',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
                   const SizedBox(height: 5),
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.orange, size: 14),
-                      Text(" ${data['rating'] ?? 0.0}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(
+                        " ${data['rating'] ?? 0.0}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
-                  )
+                  ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -358,22 +494,31 @@ class _HomePageState extends State<HomePage> {
         width: 160,
         margin: const EdgeInsets.only(right: 15, bottom: 5),
         decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))
-            ]),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                    image: DecorationImage(
-                        image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/201'),
-                        fit: BoxFit.cover
-                    )
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(15),
+                  ),
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      data['imageUrl'] ?? 'https://picsum.photos/201',
+                    ),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -382,9 +527,22 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(data['name'] ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    data['name'] ?? 'Tanpa Nama',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 2),
-                  Text(data['location'] ?? 'Lokasi tidak ada', style: TextStyle(color: Colors.grey[500], fontSize: 10), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    data['location'] ?? 'Lokasi tidak ada',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 10),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
