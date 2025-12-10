@@ -12,16 +12,28 @@ class KulinerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const _HeaderSection(), 
-            const SizedBox(height: 20), 
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GestureDetector(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              _buildHeader(context),
+              
+              const SizedBox(height: 24),
+              const Text(
+                "Kuliner", 
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900, 
+                  color: Colors.black
+                )
+              ),
+              
+              const SizedBox(height: 20), 
+
+              GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TerfavoritPage())),
                 child: Container(
                   height: 60, width: double.infinity,
@@ -29,15 +41,12 @@ class KulinerScreen extends StatelessWidget {
                   child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.star_border, size: 28, color: Color(0xFFE53935)), SizedBox(width: 10), Text("Lihat Kuliner Terfavorit", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))]),
                 ),
               ),
-            ),
-            
-            const SizedBox(height: 24),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text("Rekomendasi Kuliner", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black))),
-            const SizedBox(height: 16),
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: StreamBuilder<QuerySnapshot>(
+              
+              const SizedBox(height: 30),
+              const Text("Rekomendasi Kuliner", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+              const SizedBox(height: 16),
+              
+              StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance.collection('places').where('category', isEqualTo: 'kuliner').snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
@@ -60,40 +69,31 @@ class KulinerScreen extends StatelessWidget {
                   );
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _HeaderSection extends StatelessWidget {
-  const _HeaderSection();
-  @override
-  Widget build(BuildContext context) {
-    return Stack(children: [
-        Container(height: 220, width: double.infinity, decoration: const BoxDecoration(image: DecorationImage(image: NetworkImage('https://tajuknasional.com/wp-content/uploads/2025/09/IMG_0492.jpeg'), fit: BoxFit.cover)), child: Container(color: Colors.black.withOpacity(0.4))),
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0), 
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context), 
-                  child: Container(
-                    padding: const EdgeInsets.all(8), 
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), 
-                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 24)
-                  )
-                ), 
-              ]
-            )
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pop(context), 
+          child: Container(
+            padding: const EdgeInsets.all(8), 
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100, 
+              shape: BoxShape.circle, 
+              border: Border.all(color: Colors.grey.shade300)
+            ), 
+            child: const Icon(Icons.arrow_back, color: Colors.black, size: 24)
           )
-        ),
-        const Positioned(left: 20, bottom: 30, child: Text("Kuliner", style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0))),
-    ]);
+        ), 
+      ]
+    );
   }
 }
 
