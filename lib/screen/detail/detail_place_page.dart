@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
@@ -33,6 +35,19 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
     final double long = (widget.placeData['longitude'] ?? 0.0).toDouble();
     final bool hasLocation = lat != 0.0 && long != 0.0;
     final LatLng placeLocation = LatLng(lat, long);
+
+    final String category = widget.placeData['category'] ?? 'wisata';
+    DateTime? startDate;
+    DateTime? endDate;
+
+    if (category == 'event') {
+      if (widget.placeData['startDate'] != null) {
+        startDate = (widget.placeData['startDate'] as Timestamp).toDate();
+      }
+      if (widget.placeData['endDate'] != null) {
+        endDate = (widget.placeData['endDate'] as Timestamp).toDate();
+      }
+    }
 
     if (hasLocation) {
       _markers.add(
@@ -115,14 +130,20 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue[200]!),
+                          ),
                           child: Text(
-                            widget.placeData['name'] ?? 'Tanpa Nama',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            category.toUpperCase(),
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blue[800]),
                           ),
                         ),
+                        const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(color: Colors.amber[100], borderRadius: BorderRadius.circular(12)),
@@ -136,7 +157,54 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.placeData['name'] ?? 'Tanpa Nama',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 16),
+                    
+                    if (category == 'event' && startDate != null && endDate != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.calendar_today, size: 16, color: Colors.blue),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    DateFormat('dd MMM yyyy, HH:mm').format(startDate),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.event_busy, size: 16, color: Colors.red),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    DateFormat('dd MMM yyyy, HH:mm').format(endDate),
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     Row(
                       children: [
                         const Icon(Icons.location_on, color: JokkaColors.primary, size: 20),
@@ -189,7 +257,21 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]),
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () async {
+            final lat = widget.placeData['latitude'];
+            final long = widget.placeData['longitude'];
+            
+            if (lat != null && long != null) {
+              final Uri googleMapsUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$long");
+              if (await canLaunchUrl(googleMapsUrl)) {
+                await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Tidak dapat membuka peta")),
+                );
+              }
+            }
+          },
           style: ElevatedButton.styleFrom(backgroundColor: JokkaColors.primary, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
           child: const Text("Lihat Rute", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
         ),
