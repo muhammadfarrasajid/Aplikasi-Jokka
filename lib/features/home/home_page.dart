@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: JokkaColors.background,
+      backgroundColor: Colors.white,
       endDrawer: const SideMenu(),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -59,7 +59,10 @@ class _HomePageState extends State<HomePage> {
               'assets/images/logo_jokka_header.png',
               height: 50,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(color: JokkaColors.primary, fontSize: 24, fontWeight: FontWeight.bold)),
+              errorBuilder: (context, error, stackTrace) => const Text(
+                "JOKKA", 
+                style: TextStyle(color: JokkaColors.primary, fontSize: 24, fontWeight: FontWeight.bold)
+              ),
             ),
           ],
         ),
@@ -79,7 +82,8 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            const SizedBox(height: 100),
+
+            const SizedBox(height: 80), 
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -179,10 +183,49 @@ class _HomePageState extends State<HomePage> {
       clipBehavior: Clip.none,
       children: [
         Container(
-          height: 300, width: double.infinity,
-          decoration: const BoxDecoration(image: DecorationImage(image: NetworkImage('https://www.bluebirdgroup.com/storage/files/shares/articles/wisata%20makassar/Benteng%20Fort%20Rotterdam.jpg'), fit: BoxFit.cover)),
-          child: Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.black.withOpacity(0.6), Colors.transparent]))),
+          height: 320, 
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/background_image.png'), 
+              fit: BoxFit.cover,
+              alignment: Alignment.topCenter
+            )
+          ),
         ),
+
+        Container(
+          height: 200,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.black.withOpacity(0.7), Colors.transparent]
+            )
+          )
+        ),
+
+        Positioned(
+          top: 150,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.white, 
+                  Colors.white.withOpacity(0.8),
+                  Colors.white.withOpacity(0.0)
+                ],
+                stops: const [0.0, 0.4, 1.0],
+              )
+            ),
+          ),
+        ),
+
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -191,6 +234,7 @@ class _HomePageState extends State<HomePage> {
               const Text("Mau kemana hari ini?", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white70)),
           ]),
         ),
+
         Positioned(bottom: -50, left: 20, right: 20, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
