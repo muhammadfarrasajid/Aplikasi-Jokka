@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../core/theme/app_theme.dart';
+import '../detail/detail_place_page.dart';
 import 'terfavorit_page.dart';
 
 class KulinerScreen extends StatelessWidget {
@@ -12,13 +16,13 @@ class KulinerScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header (Back Button + Logo + Search)
+            // Header (Back Button + Logo + Judul)
             const _HeaderSection(), 
             
-            // JARAK DIPERLEBAR (Supaya tidak menabrak Search Bar)
-            const SizedBox(height: 60), 
+            // JARAK DIKURANGI (Karena Search Bar dihapus)
+            const SizedBox(height: 20), 
             
-            // --- BAGIAN TOMBOL FILTER ---
+            // --- BAGIAN TOMBOL FILTER KE HALAMAN TERFAVORIT ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: GestureDetector(
@@ -77,22 +81,44 @@ class KulinerScreen extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            // Grid View
+            // --- GRID VIEW DATA ASLI ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GridView.builder(
-                padding: const EdgeInsets.only(bottom: 20),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 4,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.8,
-                ),
-                itemBuilder: (context, index) {
-                  return const _RestoCard();
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('places')
+                    .where('category', isEqualTo: 'kuliner')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.all(20),
+                      alignment: Alignment.center,
+                      child: const Text("Belum ada data kuliner."),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: docs.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.75,
+                    ),
+                    itemBuilder: (context, index) {
+                      var data = docs[index].data() as Map<String, dynamic>;
+                      return _RealKulinerCard(data: data);
+                    },
+                  );
                 },
               ),
             ),
@@ -109,31 +135,30 @@ class _HeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      clipBehavior: Clip.none,
+      // Hapus clipBehavior karena tidak ada elemen yang keluar batas lagi
       children: [
         // Background Image
         Container(
-          height: 220,
+          height: 220, // Tinggi tetap
           width: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage('https://placehold.co/600x400/png'),
+              image: NetworkImage('https://tajuknasional.com/wp-content/uploads/2025/09/IMG_0492.jpeg'),
               fit: BoxFit.cover,
             ),
           ),
           child: Container(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.4),
           ),
         ),
 
-        // SafeArea
+        // SafeArea & Navbar
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 1. KIRI: Tombol Back
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
@@ -146,7 +171,6 @@ class _HeaderSection extends StatelessWidget {
                   ),
                 ),
                 
-                // 2. TENGAH: LOGO JOKKA
                 Image.asset(
                   'assets/images/logo_jokka.png',
                   height: 32,
@@ -156,95 +180,129 @@ class _HeaderSection extends StatelessWidget {
                   },
                 ),
                 
-                // 3. KANAN: KOTAK KOSONG (Dummy)
-                // Ini trik supaya Logo tetap pas di tengah. 
-                // Ukurannya disamakan dengan tombol Back (sekitar 40px)
                 const SizedBox(width: 40, height: 40),
               ],
             ),
           ),
         ),
 
+        // Judul Besar
         const Positioned(
           left: 20,
-          top: 100,
+          bottom: 30, // Posisi judul agak ke bawah sedikit biar estetik
           child: Text(
             "Kuliner",
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+              fontSize: 36, // Font diperbesar sedikit
+              fontWeight: FontWeight.w900,
               color: Colors.white,
+              letterSpacing: 1.0,
             ),
           ),
         ),
         
-        // Search Bar
-        Positioned(
-          bottom: -25,
-          left: 20,
-          right: 20,
-          child: Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: "Lagi mau makan apa hari ini ?",
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                prefixIcon: SizedBox(width: 10),
-                suffixIcon: Icon(Icons.search, color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 15),
-              ),
-            ),
-          ),
-        ),
+        // SEARCH BAR SUDAH DIHAPUS DARI SINI
       ],
     );
   }
 }
 
-class _RestoCard extends StatelessWidget {
-  const _RestoCard();
+class _RealKulinerCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+
+  const _RealKulinerCard({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            bottom: 15,
-            left: 15,
-            right: 15,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Nama Resto",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                Text(
-                  "Alamat Resto",
-                  style: TextStyle(fontSize: 12, color: Colors.grey[800]),
-                ),
-              ],
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailPlacePage(placeData: data),
           ),
-        ],
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  image: DecorationImage(
+                    image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data['name'] ?? 'Tanpa Nama',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 12, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          data['location'] ?? '-',
+                          style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        data['price'] ?? 'Gratis',
+                        style: const TextStyle(
+                          fontSize: 12, 
+                          color: JokkaColors.primary, 
+                          fontWeight: FontWeight.bold
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, size: 12, color: Colors.orange),
+                          Text(
+                            " ${data['rating'] ?? 0.0}",
+                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
