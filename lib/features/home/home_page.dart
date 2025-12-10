@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import '../../providers/user_provider.dart';
 import '../../core/theme/app_theme.dart';
@@ -340,9 +341,82 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildRealVerticalCard(Map<String, dynamic> data, String id) {
+    String category = (data['category'] ?? '').toString().toLowerCase();
+    String subtitleText = data['description'] ?? 'Tidak ada deskripsi';
+    IconData subtitleIcon = Icons.description;
+    Color subtitleColor = Colors.grey[600]!;
+
+    if (category == 'event' && data['startDate'] != null) {
+      DateTime date = (data['startDate'] as Timestamp).toDate();
+      subtitleText = DateFormat('dd MMM yyyy, HH:mm').format(date);
+      subtitleIcon = Icons.calendar_today;
+      subtitleColor = Colors.blue;
+    } else if (data['location'] != null && data['location'].toString().isNotEmpty) {
+      subtitleText = data['location'];
+      subtitleIcon = Icons.location_on;
+    }
+
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPlacePage(placeData: data, placeId: id))),
-      child: Container(margin: const EdgeInsets.only(bottom: 15), padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.grey[200]!)), child: Row(children: [Container(width: 80, height: 80, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), image: DecorationImage(image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'), fit: BoxFit.cover))), const SizedBox(width: 15), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(data['name'] ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), const SizedBox(height: 5), Text(data['description'] ?? 'Tidak ada deskripsi', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[600], fontSize: 12)), const SizedBox(height: 5), Row(children: [const Icon(Icons.star, color: Colors.orange, size: 14), Text(" ${data['rating'] ?? 0.0}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))])]))])));
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15), 
+        padding: const EdgeInsets.all(10), 
+        decoration: BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.circular(15), 
+          border: Border.all(color: Colors.grey[200]!)
+        ), 
+        child: Row(
+          children: [
+            Container(
+              width: 80, 
+              height: 80, 
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10), 
+                image: DecorationImage(
+                  image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'), 
+                  fit: BoxFit.cover
+                )
+              )
+            ), 
+            const SizedBox(width: 15), 
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, 
+                children: [
+                  Text(
+                    data['name'] ?? 'Tanpa Nama', 
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                  ), 
+                  const SizedBox(height: 5), 
+                  Row(
+                    children: [
+                      Icon(subtitleIcon, size: 12, color: subtitleColor),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          subtitleText, 
+                          maxLines: 1, 
+                          overflow: TextOverflow.ellipsis, 
+                          style: TextStyle(color: subtitleColor, fontSize: 12, fontWeight: category == 'event' ? FontWeight.bold : FontWeight.normal)
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5), 
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.orange, size: 14), 
+                      Text(" ${data['rating'] ?? 0.0}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))
+                    ]
+                  )
+                ]
+              )
+            )
+          ]
+        )
+      )
+    );
   }
 
   Widget _buildRealHorizontalCard(Map<String, dynamic> data, String id) {
