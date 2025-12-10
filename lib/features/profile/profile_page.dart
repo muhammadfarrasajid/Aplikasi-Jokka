@@ -5,6 +5,7 @@ import '../../../providers/user_provider.dart';
 import '../../../core/widgets/side_menu.dart';
 import '../auth/presentation/login_page.dart';
 import '../../../core/theme/app_theme.dart';
+import '../home/home_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -30,22 +31,30 @@ class ProfilePage extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/logo_jokka_header.png',
-              height: 40,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Text(
-                "JOKKA",
-                style: TextStyle(
-                    color: Color(0xFFE53935),
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  (route) => false,
+                );
+              },
+              child: Image.asset(
+                'assets/images/logo_jokka_header.png',
+                height: 40,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Text(
+                  "JOKKA",
+                  style: TextStyle(
+                      color: Color(0xFFE53935),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
         ),
         actions: [
-          // HAMBURGER MENU
           Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.menu, color: Colors.black, size: 32),

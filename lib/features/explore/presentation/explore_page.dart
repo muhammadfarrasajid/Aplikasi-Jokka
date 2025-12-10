@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/widgets/side_menu.dart';
 import '../../../screen/detail/detail_place_page.dart';
+import '../../home/home_page.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -31,16 +32,25 @@ class _ExplorePageState extends State<ExplorePage> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/logo_jokka_header.png',
-              height: 50,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Text(
-                "JOKKA",
-                style: TextStyle(
-                  color: Color(0xFFE53935),
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  (route) => false,
+                );
+              },
+              child: Image.asset(
+                'assets/images/logo_jokka_header.png',
+                height: 50,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Text(
+                  "JOKKA",
+                  style: TextStyle(
+                    color: Color(0xFFE53935),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
