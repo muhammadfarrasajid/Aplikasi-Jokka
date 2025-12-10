@@ -1,3 +1,5 @@
+// Lokasi: lib/features/home/home_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +14,10 @@ import '../../screen/admin/add_place_page.dart';
 import '../../screen/detail/detail_place_page.dart';
 import '../../screen/event/event_page.dart';
 
+// --- IMPORT HALAMAN BARU ---
+import '../articles/presentation/articles_page.dart'; // Import Halaman Artikel
+import '../wishlist/presentation/wishlist_page.dart'; // Import Halaman Wishlist
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -20,6 +26,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0; // State untuk Bottom Nav
+
   final List<Map<String, String>> floatingMenus = [
     {'icon': 'top', 'label': 'Top Wisata'},
     {'icon': 'event', 'label': 'Event'},
@@ -48,6 +56,43 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: JokkaColors.background,
+      
+      // --- BOTTOM NAVIGATION BAR ---
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          if (index == 2) { 
+            // Index 2 = Artikel / News (Ikon ke-3 dari kiri)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ArticlesPage()),
+            );
+          } else if (index == 3) {
+            // Index 3 = Wishlist / Saved (Ikon ke-4 dari kiri)
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const WishlistPage()),
+            );
+          } else {
+            // Index 0 (Home) & 1 (Explore)
+            setState(() {
+              _selectedIndex = index;
+            });
+          }
+        },
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: JokkaColors.primary,
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
+          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'News'), // Target Kita
+          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+        ],
+      ),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,33 +359,34 @@ class _HomePageState extends State<HomePage> {
             children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
-                  if (menu['label'] == 'Kuliner')
+                  if (menu['label'] == 'Kuliner') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const KulinerScreen(),
                       ),
                     );
-                  else if (menu['label'] == 'Top Wisata')
+                  } else if (menu['label'] == 'Top Wisata') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const TopWisataPage(),
                       ),
                     );
-                  else if (menu['label'] == 'Event') {
+                  } else if (menu['label'] == 'Event') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const EventPage(),
                       ),
                     );
-                  } else
+                  } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text("Menu ${menu['label']} segera hadir!"),
                       ),
                     );
+                  }
                 },
                 child: Container(
                   width: 100,
