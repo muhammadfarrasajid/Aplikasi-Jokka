@@ -31,6 +31,7 @@ class _EditPlacePageState extends State<EditPlacePage> {
   late TextEditingController _ratingController;
   late TextEditingController _latController;
   late TextEditingController _longController;
+  late TextEditingController _openingHoursController;
 
   String _selectedCategory = 'wisata';
   String? _currentImageUrl;
@@ -52,6 +53,7 @@ class _EditPlacePageState extends State<EditPlacePage> {
     _ratingController = TextEditingController(text: (widget.currentData['rating'] ?? 0.0).toString());
     _latController = TextEditingController(text: (widget.currentData['latitude'] ?? 0.0).toString());
     _longController = TextEditingController(text: (widget.currentData['longitude'] ?? 0.0).toString());
+    _openingHoursController = TextEditingController(text: widget.currentData['openingHours']);
     
     _selectedCategory = widget.currentData['category'] ?? 'wisata';
     _currentImageUrl = widget.currentData['imageUrl'];
@@ -75,6 +77,7 @@ class _EditPlacePageState extends State<EditPlacePage> {
     _ratingController.dispose();
     _latController.dispose();
     _longController.dispose();
+    _openingHoursController.dispose();
     super.dispose();
   }
 
@@ -155,9 +158,11 @@ class _EditPlacePageState extends State<EditPlacePage> {
       if (_selectedCategory == 'event') {
         updateData['startDate'] = Timestamp.fromDate(_startDate!);
         updateData['endDate'] = Timestamp.fromDate(_endDate!);
+        updateData['openingHours'] = FieldValue.delete();
       } else {
         updateData['startDate'] = FieldValue.delete();
         updateData['endDate'] = FieldValue.delete();
+        updateData['openingHours'] = _openingHoursController.text;
       }
 
       await FirebaseFirestore.instance.collection('places').doc(widget.placeId).update(updateData);
@@ -272,6 +277,11 @@ class _EditPlacePageState extends State<EditPlacePage> {
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
+              ],
+
+              if (_selectedCategory != 'event') ...[
+                _buildTextField(_openingHoursController, "Jam Operasional"),
                 const SizedBox(height: 16),
               ],
 

@@ -24,6 +24,7 @@ class _AddPlacePageState extends State<AddPlacePage> {
   final TextEditingController _ratingController = TextEditingController();
   final TextEditingController _latController = TextEditingController();
   final TextEditingController _longController = TextEditingController();
+  final TextEditingController _openingHoursController = TextEditingController();
 
   String _selectedCategory = 'wisata';
   File? _imageFile;
@@ -43,6 +44,7 @@ class _AddPlacePageState extends State<AddPlacePage> {
     _ratingController.dispose();
     _latController.dispose();
     _longController.dispose();
+    _openingHoursController.dispose();
     super.dispose();
   }
 
@@ -129,6 +131,8 @@ class _AddPlacePageState extends State<AddPlacePage> {
       if (_selectedCategory == 'event') {
         dataToSave['startDate'] = Timestamp.fromDate(_startDate!);
         dataToSave['endDate'] = Timestamp.fromDate(_endDate!);
+      } else {
+        dataToSave['openingHours'] = _openingHoursController.text;
       }
 
       await FirebaseFirestore.instance.collection('places').add(dataToSave);
@@ -251,6 +255,11 @@ class _AddPlacePageState extends State<AddPlacePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
+              ],
+
+              if (_selectedCategory != 'event') ...[
+                 _buildTextField(_openingHoursController, "Jam Operasional"),
+                 const SizedBox(height: 16),
               ],
 
               _buildTextField(_descController, "Deskripsi Singkat", maxLines: 3),
