@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 
@@ -36,6 +37,9 @@ class _EditPlacePageState extends State<EditPlacePage> {
   File? _newImageFile;
   bool _isLoading = false;
 
+  DateTime? _startDate;
+  DateTime? _endDate;
+
   final List<String> _categories = ['wisata', 'kuliner', 'event'];
 
   @override
@@ -51,6 +55,15 @@ class _EditPlacePageState extends State<EditPlacePage> {
     
     _selectedCategory = widget.currentData['category'] ?? 'wisata';
     _currentImageUrl = widget.currentData['imageUrl'];
+
+    if (_selectedCategory == 'event') {
+      if (widget.currentData['startDate'] != null) {
+        _startDate = (widget.currentData['startDate'] as Timestamp).toDate();
+      }
+      if (widget.currentData['endDate'] != null) {
+        _endDate = (widget.currentData['endDate'] as Timestamp).toDate();
+      }
+    }
   }
 
   @override
@@ -68,17 +81,49 @@ class _EditPlacePageState extends State<EditPlacePage> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) setState(() => _newImageFile = File(pickedFile.path));
+  }
 
-    if (pickedFile != null) {
-      setState(() {
-        _newImageFile = File(pickedFile.path);
-      });
+  Future<void> _selectDateTime(bool isStart) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: isStart ? (_startDate ?? DateTime.now()) : (_endDate ?? DateTime.now()),
+      firstDate: DateTime(2000), 
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null && mounted) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(isStart ? (_startDate ?? DateTime.now()) : (_endDate ?? DateTime.now())),
+      );
+
+      if (pickedTime != null) {
+        setState(() {
+          final dateTime = DateTime(
+            pickedDate.year, pickedDate.month, pickedDate.day,
+            pickedTime.hour, pickedTime.minute
+          );
+          if (isStart) {
+            _startDate = dateTime;
+          } else {
+            _endDate = dateTime;
+          }
+        });
+      }
     }
   }
 
   Future<void> _updateData() async {
     if (!_formKey.currentState!.validate()) return;
     
+    if (_selectedCategory == 'event') {
+      if (_startDate == null || _endDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tanggal wajib diisi untuk Event!')));
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -88,15 +133,14 @@ class _EditPlacePageState extends State<EditPlacePage> {
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
         Reference storageRef = FirebaseStorage.instance.ref().child('places/$fileName.jpg');
         UploadTask uploadTask = storageRef.putFile(_newImageFile!);
-        TaskSnapshot snapshot = await uploadTask;
-        imageUrl = await snapshot.ref.getDownloadURL();
+        imageUrl = await (await uploadTask).ref.getDownloadURL();
       }
 
       double rating = double.tryParse(_ratingController.text) ?? 0.0;
       double latitude = double.tryParse(_latController.text) ?? 0.0;
       double longitude = double.tryParse(_longController.text) ?? 0.0;
 
-      await FirebaseFirestore.instance.collection('places').doc(widget.placeId).update({
+      Map<String, dynamic> updateData = {
         'name': _nameController.text,
         'description': _descController.text,
         'category': _selectedCategory,
@@ -106,19 +150,25 @@ class _EditPlacePageState extends State<EditPlacePage> {
         'imageUrl': imageUrl,
         'latitude': latitude,
         'longitude': longitude,
-      });
+      };
+
+      if (_selectedCategory == 'event') {
+        updateData['startDate'] = Timestamp.fromDate(_startDate!);
+        updateData['endDate'] = Timestamp.fromDate(_endDate!);
+      } else {
+        updateData['startDate'] = FieldValue.delete();
+        updateData['endDate'] = FieldValue.delete();
+      }
+
+      await FirebaseFirestore.instance.collection('places').doc(widget.placeId).update(updateData);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data berhasil diperbarui!')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Data berhasil diperbarui!')));
         Navigator.pop(context); 
         Navigator.pop(context); 
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -160,12 +210,11 @@ class _EditPlacePageState extends State<EditPlacePage> {
                       : null,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Center(child: Text("Ketuk gambar untuk mengganti foto", style: TextStyle(color: Colors.grey, fontSize: 12))),
-              
               const SizedBox(height: 24),
+
               _buildTextField(_nameController, "Nama"),
               const SizedBox(height: 16),
+              
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: InputDecoration(
@@ -181,6 +230,51 @@ class _EditPlacePageState extends State<EditPlacePage> {
                 onChanged: (newValue) => setState(() => _selectedCategory = newValue!),
               ),
               const SizedBox(height: 16),
+
+              if (_selectedCategory == 'event') ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue[200]!)
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Waktu Event", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _selectDateTime(true),
+                              icon: const Icon(Icons.calendar_today, size: 16),
+                              label: Text(_startDate == null 
+                                ? "Mulai" 
+                                : DateFormat('dd/MM/yy HH:mm').format(_startDate!)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Icon(Icons.arrow_forward, color: Colors.grey),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => _selectDateTime(false),
+                              icon: const Icon(Icons.event_busy, size: 16),
+                              label: Text(_endDate == null 
+                                ? "Selesai" 
+                                : DateFormat('dd/MM/yy HH:mm').format(_endDate!)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
               _buildTextField(_descController, "Deskripsi Singkat", maxLines: 3),
               const SizedBox(height: 16),
               _buildTextField(_locationController, "Alamat"),
