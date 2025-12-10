@@ -72,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: <Widget>[
                 Center(
                   child: Image.asset(
-                    'assets/images/logo_jokka.png',
+                    'assets/images/logo_jokka_header.png',
                     height: 60,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
