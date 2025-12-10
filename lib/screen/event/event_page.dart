@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../detail/detail_place_page.dart';
@@ -23,20 +24,16 @@ class EventPage extends StatelessWidget {
         title: const Text('Event Jokka'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // FILTER: Hanya ambil kategori 'event'
-        // ORDER: Dari yang paling baru dibuat
         stream: FirebaseFirestore.instance
             .collection('places')
             .where('category', isEqualTo: 'event')
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          // 1. Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           
-          // 2. Data Kosong
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Column(
@@ -52,7 +49,6 @@ class EventPage extends StatelessWidget {
 
           final docs = snapshot.data!.docs;
 
-          // 3. List Data Asli
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: docs.length,
@@ -60,7 +56,7 @@ class EventPage extends StatelessWidget {
             itemBuilder: (context, index) {
               var doc = docs[index];
               var data = doc.data() as Map<String, dynamic>;
-              var id = doc.id; // Ambil ID Dokumen
+              var id = doc.id;
 
               return _RealEventCard(data: data, id: id);
             },
@@ -79,9 +75,14 @@ class _RealEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String dateText = 'Tanggal belum ditentukan';
+    if (data['startDate'] != null) {
+      DateTime date = (data['startDate'] as Timestamp).toDate();
+      dateText = DateFormat('dd MMM yyyy, HH:mm').format(date);
+    }
+
     return GestureDetector(
       onTap: () {
-        // Navigasi ke Detail Page
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -104,7 +105,6 @@ class _RealEventCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // GAMBAR KIRI
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(24),
@@ -126,7 +126,6 @@ class _RealEventCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             
-            // INFO KANAN
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
@@ -134,7 +133,6 @@ class _RealEventCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // JUDUL EVENT
                     Text(
                       data['name'] ?? 'Nama Event',
                       maxLines: 2,
@@ -146,14 +144,13 @@ class _RealEventCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     
-                    // BARIS 1: HARGA (Gantikan Tanggal)
                     Row(
                       children: [
-                        const Icon(Icons.confirmation_number_outlined, size: 14, color: JokkaColors.primary),
+                        const Icon(Icons.calendar_today, size: 14, color: JokkaColors.primary),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            data['price'] ?? 'Gratis',
+                            dateText,
                             style: const TextStyle(
                               fontSize: 12,
                               color: JokkaColors.primary, 
@@ -167,7 +164,6 @@ class _RealEventCard extends StatelessWidget {
                     
                     const SizedBox(height: 4),
                     
-                    // BARIS 2: LOKASI
                     Row(
                       children: [
                         const Icon(
