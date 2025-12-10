@@ -1,10 +1,9 @@
-// Lokasi: lib/features/home/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// --- IMPORT LAINNYA ---
 import '../../providers/user_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../services/notification_service.dart';
@@ -12,11 +11,9 @@ import '../../screen/kuliner/kuliner_screen.dart';
 import '../../screen/wisata/top_wisata_page.dart';
 import '../../screen/admin/add_place_page.dart';
 import '../../screen/detail/detail_place_page.dart';
-import '../../screen/event/event_page.dart';
 
-// --- IMPORT HALAMAN BARU ---
-import '../articles/presentation/articles_page.dart'; // Import Halaman Artikel
-import '../wishlist/presentation/wishlist_page.dart'; // Import Halaman Wishlist
+// Import Event Page
+import '../../screen/event/event_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,8 +23,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // State untuk Bottom Nav
-
   final List<Map<String, String>> floatingMenus = [
     {'icon': 'top', 'label': 'Top Wisata'},
     {'icon': 'event', 'label': 'Event'},
@@ -54,42 +49,70 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+
     return Scaffold(
       backgroundColor: JokkaColors.background,
-      
-      // --- BOTTOM NAVIGATION BAR ---
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          if (index == 2) { 
-            // Index 2 = Artikel / News (Ikon ke-3 dari kiri)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ArticlesPage()),
-            );
-          } else if (index == 3) {
-            // Index 3 = Wishlist / Saved (Ikon ke-4 dari kiri)
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const WishlistPage()),
-            );
-          } else {
-            // Index 0 (Home) & 1 (Explore)
-            setState(() {
-              _selectedIndex = index;
-            });
-          }
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: JokkaColors.primary,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.article), label: 'News'), // Target Kita
-          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+
+      // --- HEADER (APPBAR) PUTIH ---
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+        automaticallyImplyLeading: false,
+
+        // --- LOGO BARU DI SINI ---
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo_jokka_header.png',
+              height: 50,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Text(
+                "JOKKA",
+                style: TextStyle(
+                  color: JokkaColors.primary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: userProvider.isAdmin
+                ? GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddPlacePage(),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.add_circle_outline,
+                      color: Colors.black,
+                      size: 32,
+                    ),
+                  )
+                : GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Halaman Profil sedang dikerjakan teman!",
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.account_circle_outlined,
+                      color: Colors.black,
+                      size: 32,
+                    ),
+                  ),
+          ),
         ],
       ),
 
@@ -262,72 +285,19 @@ class _HomePageState extends State<HomePage> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                colors: [
+                  Colors.black.withValues(alpha: 0.6),
+                  Colors.transparent,
+                ],
               ),
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset(
-                    'assets/images/logo_jokka.png',
-                    height: 40,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) => const Text(
-                      "JOKKA",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  userProvider.isAdmin
-                      ? GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddPlacePage(),
-                            ),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                        )
-                      : GestureDetector(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Halaman Profil sedang dikerjakan teman!",
-                                ),
-                              ),
-                            );
-                          },
-                          child: const Icon(
-                            Icons.person_outline,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                ],
-              ),
-              const SizedBox(height: 20),
               Text(
                 "Halo, $displayName",
                 style: const TextStyle(
@@ -396,7 +366,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -544,7 +514,7 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               blurRadius: 5,
               offset: const Offset(0, 2),
             ),
