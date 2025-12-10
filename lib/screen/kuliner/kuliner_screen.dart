@@ -16,90 +16,32 @@ class KulinerScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header (Back Button + Logo + Judul)
             const _HeaderSection(), 
-            
-            // JARAK DIKURANGI (Karena Search Bar dihapus)
             const SizedBox(height: 20), 
             
-            // --- BAGIAN TOMBOL FILTER KE HALAMAN TERFAVORIT ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TerfavoritPage(),
-                    ),
-                  );
-                },
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TerfavoritPage())),
                 child: Container(
-                  height: 60,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade300),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      )
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.star_border, size: 28, color: Color(0xFFE53935)), 
-                      SizedBox(width: 10),
-                      Text(
-                        "Lihat Kuliner Terfavorit",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                    ],
-                  ),
+                  height: 60, width: double.infinity,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade300), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))]),
+                  child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.star_border, size: 28, color: Color(0xFFE53935)), SizedBox(width: 10), Text("Lihat Kuliner Terfavorit", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))]),
                 ),
               ),
             ),
             
             const SizedBox(height: 24),
-            
-            // --- JUDUL ---
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                "Rekomendasi Kuliner", 
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            
+            const Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text("Rekomendasi Kuliner", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black))),
             const SizedBox(height: 16),
             
-            // --- GRID VIEW DATA ASLI ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('places')
-                    .where('category', isEqualTo: 'kuliner')
-                    .snapshots(),
+                stream: FirebaseFirestore.instance.collection('places').where('category', isEqualTo: 'kuliner').snapshots(),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      alignment: Alignment.center,
-                      child: const Text("Belum ada data kuliner."),
-                    );
-                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return Container(padding: const EdgeInsets.all(20), alignment: Alignment.center, child: const Text("Belum ada data kuliner."));
 
                   final docs = snapshot.data!.docs;
 
@@ -108,15 +50,12 @@ class KulinerScreen extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: docs.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.75,
-                    ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 0.75),
                     itemBuilder: (context, index) {
-                      var data = docs[index].data() as Map<String, dynamic>;
-                      return _RealKulinerCard(data: data);
+                      var doc = docs[index];
+                      var data = doc.data() as Map<String, dynamic>;
+                      var id = doc.id; // AMBIL ID
+                      return _RealKulinerCard(data: data, id: id); // KIRIM ID
                     },
                   );
                 },
@@ -131,178 +70,41 @@ class KulinerScreen extends StatelessWidget {
 
 class _HeaderSection extends StatelessWidget {
   const _HeaderSection();
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      // Hapus clipBehavior karena tidak ada elemen yang keluar batas lagi
-      children: [
-        // Background Image
-        Container(
-          height: 220, // Tinggi tetap
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage('https://tajuknasional.com/wp-content/uploads/2025/09/IMG_0492.jpeg'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            color: Colors.black.withOpacity(0.4),
-          ),
-        ),
-
-        // SafeArea & Navbar
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-                  ),
-                ),
-                
-                Image.asset(
-                  'assets/images/logo_jokka.png',
-                  height: 32,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                     return const Text("JOKKA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24));
-                  },
-                ),
-                
-                const SizedBox(width: 40, height: 40),
-              ],
-            ),
-          ),
-        ),
-
-        // Judul Besar
-        const Positioned(
-          left: 20,
-          bottom: 30, // Posisi judul agak ke bawah sedikit biar estetik
-          child: Text(
-            "Kuliner",
-            style: TextStyle(
-              fontSize: 36, // Font diperbesar sedikit
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: 1.0,
-            ),
-          ),
-        ),
-        
-        // SEARCH BAR SUDAH DIHAPUS DARI SINI
-      ],
-    );
+    return Stack(children: [
+        Container(height: 220, width: double.infinity, decoration: const BoxDecoration(image: DecorationImage(image: NetworkImage('https://tajuknasional.com/wp-content/uploads/2025/09/IMG_0492.jpeg'), fit: BoxFit.cover)), child: Container(color: Colors.black.withOpacity(0.4))),
+        SafeArea(child: Padding(padding: const EdgeInsets.all(20.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [GestureDetector(onTap: () => Navigator.pop(context), child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), child: const Icon(Icons.arrow_back, color: Colors.white, size: 24))), Image.asset('assets/images/logo_jokka.png', height: 32, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24))), const SizedBox(width: 40, height: 40)]))),
+        const Positioned(left: 20, bottom: 30, child: Text("Kuliner", style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0))),
+    ]);
   }
 }
 
 class _RealKulinerCard extends StatelessWidget {
   final Map<String, dynamic> data;
+  final String id; // TERIMA ID
 
-  const _RealKulinerCard({required this.data});
+  const _RealKulinerCard({required this.data, required this.id});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetailPlacePage(placeData: data),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPlacePage(placeData: data, placeId: id))), // KIRIM ID
       child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  image: DecorationImage(
-                    image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    data['name'] ?? 'Tanpa Nama',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))]),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: Container(decoration: BoxDecoration(borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), image: DecorationImage(image: NetworkImage(data['imageUrl'] ?? 'https://picsum.photos/200'), fit: BoxFit.cover)))),
+            Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(data['name'] ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, size: 12, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          data['location'] ?? '-',
-                          style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+                  Row(children: [const Icon(Icons.location_on, size: 12, color: Colors.grey), const SizedBox(width: 4), Expanded(child: Text(data['location'] ?? '-', style: TextStyle(fontSize: 10, color: Colors.grey[600]), maxLines: 1, overflow: TextOverflow.ellipsis))]),
                   const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        data['price'] ?? 'Gratis',
-                        style: const TextStyle(
-                          fontSize: 12, 
-                          color: JokkaColors.primary, 
-                          fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, size: 12, color: Colors.orange),
-                          Text(
-                            " ${data['rating'] ?? 0.0}",
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
+                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text(data['price'] ?? 'Gratis', style: const TextStyle(fontSize: 12, color: JokkaColors.primary, fontWeight: FontWeight.bold)),
+                      Row(children: [const Icon(Icons.star, size: 12, color: Colors.orange), Text(" ${data['rating'] ?? 0.0}", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold))])
+                  ])
+            ]))
+        ]),
       ),
     );
   }
