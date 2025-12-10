@@ -1,55 +1,75 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class NotificationService {
-  NotificationService._internal();
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await NotificationService().init();
+}
 
+class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
-  factory NotificationService() => _instance;
+
+  factory NotificationService() {
+    return _instance;
+  }
+
+  NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  bool _initialized = false;
+  bool _isInitialized = false;
 
-  /// Inisialisasi plugin notifikasi
   Future<void> init() async {
-    if (_initialized) return;
+    if (_isInitialized) return;
 
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettings = InitializationSettings(android: androidInit);
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    _initialized = true;
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+
+      if (notification != null && android != null) {
+        _flutterLocalNotificationsPlugin.show(
+          notification.hashCode,
+          notification.title,
+          notification.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'jokka_channel_id',
+              'Jokka Notifications',
+              importance: Importance.max,
+              priority: Priority.high,
+            ),
+          ),
+        );
+      }
+    });
+    await FirebaseMessaging.instance.subscribeToTopic('info_jokka');
+    print("Sukses subscribe ke info_jokka");
+
+    _isInitialized = true;
   }
 
-  /// Minta izin notifikasi ke sistem (Android 13+)
   Future<void> requestPermission() async {
-    final androidPlugin = _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-
-    await androidPlugin?.requestNotificationsPermission();
+    await FirebaseMessaging.instance.requestPermission();
   }
 
-  /// (opsional) nanti bisa dipakai kalau mau kirim notif dari tempat lain
-  Future<void> showWelcomeNotification() async {
-    const androidDetails = AndroidNotificationDetails(
-      'jokka_channel_id',
-      'Jokka Notifications',
-      channelDescription: 'Notifikasi dari aplikasi Jokka',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    const notifDetails = NotificationDetails(android: androidDetails);
-
-    await _flutterLocalNotificationsPlugin.show(
-      1,
-      'Notifikasi Jokka aktif',
-      'Kami akan mengirim info destinasi dan event menarik untukmu.',
-      notifDetails,
-    );
+  Future<String?> getToken() async {
+    return await FirebaseMessaging.instance.getToken();
   }
 }
