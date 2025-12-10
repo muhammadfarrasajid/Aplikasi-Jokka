@@ -20,6 +20,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String _selectedCategory = 'Semua';
+
   final List<Map<String, String>> floatingMenus = [
     {'icon': 'top', 'label': 'Top Wisata'},
     {'icon': 'event', 'label': 'Event'},
@@ -43,6 +45,19 @@ class _HomePageState extends State<HomePage> {
     await NotificationService().requestPermission();
   }
 
+  Stream<QuerySnapshot> _getFilteredStream() {
+    CollectionReference places = FirebaseFirestore.instance.collection('places');
+
+    if (_selectedCategory == 'Semua') {
+      return places.orderBy('createdAt', descending: true).limit(5).snapshots();
+    } else {
+      return places
+          .where('category', isEqualTo: _selectedCategory.toLowerCase())
+          .limit(5)
+          .snapshots();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,8 +75,8 @@ class _HomePageState extends State<HomePage> {
               height: 50,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) => const Text(
-                "JOKKA", 
-                style: TextStyle(color: JokkaColors.primary, fontSize: 24, fontWeight: FontWeight.bold)
+                "JOKKA",
+                style: TextStyle(color: JokkaColors.primary, fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -76,14 +91,12 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(width: 20),
         ],
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-
-            const SizedBox(height: 80), 
+            const SizedBox(height: 80),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -92,21 +105,51 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   const Text("Pilihan Jokka Terbaru", style: headingStyle),
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      _buildChip("Semua", true),
-                      _buildChip("Wisata", false),
-                      _buildChip("Kuliner", false),
-                    ],
+                  
+                  SingleChildScrollView( 
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildChip("Semua"),
+                        _buildChip("Wisata"),
+                        _buildChip("Event"), 
+                        _buildChip("Kuliner"),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 15),
 
                   StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('places').orderBy('createdAt', descending: true).limit(5).snapshots(),
+                    stream: _getFilteredStream(),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text("Belum ada data tempat."));
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
                       
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Container(
+                          height: 100,
+                          alignment: Alignment.center,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(15),
+                            border: Border.all(color: Colors.grey[200]!)
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.grey[400]),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Belum ada data ${_selectedCategory.toLowerCase()}.",
+                                style: TextStyle(color: Colors.grey[500]),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
                       final docs = snapshot.data!.docs;
 
                       return ListView.builder(
@@ -116,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                         itemBuilder: (context, index) {
                           var doc = docs[index];
                           var data = doc.data() as Map<String, dynamic>;
-                          var id = doc.id; 
+                          var id = doc.id;
                           return _buildRealVerticalCard(data, id);
                         },
                       );
@@ -127,6 +170,7 @@ class _HomePageState extends State<HomePage> {
             ),
 
             const SizedBox(height: 20),
+
             Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: const Text("Destinasi Wisata", style: headingStyle)),
             const SizedBox(height: 10),
             SizedBox(
@@ -145,8 +189,30 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ),
-            
+
             const SizedBox(height: 20),
+
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: const Text("Event Pilihan", style: headingStyle)),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 180,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('places').where('category', isEqualTo: 'event').limit(5).snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return Container(alignment: Alignment.center, margin: const EdgeInsets.only(left: 20), child: const Text("Belum ada data event", style: TextStyle(color: Colors.grey)));
+                  final docs = snapshot.data!.docs;
+                  return ListView.builder(scrollDirection: Axis.horizontal, padding: const EdgeInsets.only(left: 20), itemCount: docs.length, itemBuilder: (context, index) {
+                    var doc = docs[index];
+                    var data = doc.data() as Map<String, dynamic>;
+                    var id = doc.id;
+                    return _buildRealHorizontalCard(data, id);
+                  });
+                },
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: const Text("Kuliner Wajib Coba", style: headingStyle)),
             const SizedBox(height: 10),
             SizedBox(
@@ -171,7 +237,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
- 
+
   Widget _buildHeader() {
     final userProvider = Provider.of<UserProvider>(context);
     String displayName = "Jokka";
@@ -183,17 +249,16 @@ class _HomePageState extends State<HomePage> {
       clipBehavior: Clip.none,
       children: [
         Container(
-          height: 320, 
+          height: 320,
           width: double.infinity,
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/images/background_image.png'), 
+              image: AssetImage('assets/images/back_image.png'), 
               fit: BoxFit.cover,
               alignment: Alignment.topCenter
             )
           ),
         ),
-
         Container(
           height: 200,
           decoration: BoxDecoration(
@@ -204,7 +269,6 @@ class _HomePageState extends State<HomePage> {
             )
           )
         ),
-
         Positioned(
           top: 150,
           bottom: 0,
@@ -216,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
                 colors: [
-                  Colors.white, 
+                  Colors.white,
                   Colors.white.withOpacity(0.8),
                   Colors.white.withOpacity(0.0)
                 ],
@@ -225,7 +289,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -234,7 +297,6 @@ class _HomePageState extends State<HomePage> {
               const Text("Mau kemana hari ini?", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.white70)),
           ]),
         ),
-
         Positioned(bottom: -50, left: 20, right: 20, child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: floatingMenus.map((menu) {
               return GestureDetector(
                 onTap: () {
@@ -250,8 +312,31 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildChip(String label, bool isActive) {
-    return Container(margin: const EdgeInsets.only(right: 10), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: isActive ? JokkaColors.primary : Colors.grey[200], borderRadius: BorderRadius.circular(20)), child: Text(label, style: TextStyle(color: isActive ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)));
+  Widget _buildChip(String label) {
+    bool isActive = _selectedCategory == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = label;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? JokkaColors.primary : Colors.grey[200],
+          borderRadius: BorderRadius.circular(20)
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : Colors.grey[600],
+            fontSize: 12,
+            fontWeight: FontWeight.w600
+          )
+        )
+      ),
+    );
   }
 
   Widget _buildRealVerticalCard(Map<String, dynamic> data, String id) {
