@@ -39,11 +39,11 @@ class TerfavoritPage extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Expanded(child: _TopRankCard(rank: '2', doc: top2Doc)), // PASS DOC
+                        Expanded(child: _TopRankCard(rank: '2', doc: top2Doc)), 
                         const SizedBox(width: 12),
-                        Expanded(flex: 2, child: _TopRankCard(rank: '1', doc: top1Doc, isWinner: true)), // PASS DOC
+                        Expanded(flex: 2, child: _TopRankCard(rank: '1', doc: top1Doc, isWinner: true)), 
                         const SizedBox(width: 12),
-                        Expanded(child: _TopRankCard(rank: '3', doc: top3Doc)), // PASS DOC
+                        Expanded(child: _TopRankCard(rank: '3', doc: top3Doc)), 
                       ],
                     ),
                     const SizedBox(height: 30),
@@ -54,7 +54,7 @@ class TerfavoritPage extends StatelessWidget {
                         itemCount: restList.length,
                         separatorBuilder: (context, index) => const SizedBox(height: 16),
                         itemBuilder: (context, index) {
-                           return _RestoListCard(doc: restList[index]); // PASS DOC
+                           return _RestoListCard(doc: restList[index]); 
                         },
                       )
                     else if (docs.length <= 3)
@@ -79,13 +79,25 @@ class _SimpleHeader extends StatelessWidget {
   const _SimpleHeader();
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [GestureDetector(onTap: () => Navigator.pop(context), child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)), child: const Icon(Icons.arrow_back, color: Colors.black, size: 24))), Image.asset('assets/images/logo_jokka.png', height: 32, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 24))), const SizedBox(width: 42, height: 42)]);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)),
+            child: const Icon(Icons.arrow_back, color: Colors.black, size: 24)
+          )
+        ),
+      ]
+    );
   }
 }
 
 class _TopRankCard extends StatelessWidget {
   final String rank;
-  final DocumentSnapshot? doc; // GANTI DATA JADI DOC
+  final DocumentSnapshot? doc; 
   final bool isWinner;
 
   const _TopRankCard({required this.rank, this.doc, this.isWinner = false});
@@ -95,10 +107,10 @@ class _TopRankCard extends StatelessWidget {
     if (doc == null) return SizedBox(height: isWinner ? 180 : 140);
     
     var data = doc!.data() as Map<String, dynamic>;
-    var id = doc!.id; // AMBIL ID
+    var id = doc!.id; 
 
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), // KIRIM ID
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), 
       child: Container(
         height: isWinner ? 190 : 160,
         padding: const EdgeInsets.all(8),
@@ -118,17 +130,17 @@ class _TopRankCard extends StatelessWidget {
 }
 
 class _RestoListCard extends StatelessWidget {
-  final DocumentSnapshot doc; // GANTI DATA JADI DOC
+  final DocumentSnapshot doc; 
 
   const _RestoListCard({required this.doc});
 
   @override
   Widget build(BuildContext context) {
     var data = doc.data() as Map<String, dynamic>;
-    var id = doc.id; // AMBIL ID
+    var id = doc.id; 
 
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), // KIRIM ID
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), 
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.black12, width: 1)),

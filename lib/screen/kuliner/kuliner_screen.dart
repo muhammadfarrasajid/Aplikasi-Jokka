@@ -54,8 +54,8 @@ class KulinerScreen extends StatelessWidget {
                     itemBuilder: (context, index) {
                       var doc = docs[index];
                       var data = doc.data() as Map<String, dynamic>;
-                      var id = doc.id; // AMBIL ID
-                      return _RealKulinerCard(data: data, id: id); // KIRIM ID
+                      var id = doc.id; 
+                      return _RealKulinerCard(data: data, id: id); 
                     },
                   );
                 },
@@ -74,7 +74,24 @@ class _HeaderSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(children: [
         Container(height: 220, width: double.infinity, decoration: const BoxDecoration(image: DecorationImage(image: NetworkImage('https://tajuknasional.com/wp-content/uploads/2025/09/IMG_0492.jpeg'), fit: BoxFit.cover)), child: Container(color: Colors.black.withOpacity(0.4))),
-        SafeArea(child: Padding(padding: const EdgeInsets.all(20.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [GestureDetector(onTap: () => Navigator.pop(context), child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), child: const Icon(Icons.arrow_back, color: Colors.white, size: 24))), Image.asset('assets/images/logo_jokka.png', height: 32, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24))), const SizedBox(width: 40, height: 40)]))),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0), 
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context), 
+                  child: Container(
+                    padding: const EdgeInsets.all(8), 
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle), 
+                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 24)
+                  )
+                ), 
+              ]
+            )
+          )
+        ),
         const Positioned(left: 20, bottom: 30, child: Text("Kuliner", style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.0))),
     ]);
   }
@@ -82,14 +99,14 @@ class _HeaderSection extends StatelessWidget {
 
 class _RealKulinerCard extends StatelessWidget {
   final Map<String, dynamic> data;
-  final String id; // TERIMA ID
+  final String id; 
 
   const _RealKulinerCard({required this.data, required this.id});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPlacePage(placeData: data, placeId: id))), // KIRIM ID
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPlacePage(placeData: data, placeId: id))), 
       child: Container(
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 2))]),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

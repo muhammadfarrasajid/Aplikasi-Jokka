@@ -38,8 +38,8 @@ class TopWisataPage extends StatelessWidget {
                       itemBuilder: (context, index) {
                         var doc = docs[index];
                         var data = doc.data() as Map<String, dynamic>;
-                        var id = doc.id; // AMBIL ID
-                        return _TopRankHorizontalCard(data: data, id: id, rank: (index + 1).toString()); // KIRIM ID
+                        var id = doc.id; 
+                        return _TopRankHorizontalCard(data: data, id: id, rank: (index + 1).toString()); 
                       },
                     ),
                   ),
@@ -54,8 +54,8 @@ class TopWisataPage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       var doc = docs[index];
                       var data = doc.data() as Map<String, dynamic>;
-                      var id = doc.id; // AMBIL ID
-                      return _WisataListCard(data: data, id: id, rank: "Top ${index + 1}"); // KIRIM ID
+                      var id = doc.id; 
+                      return _WisataListCard(data: data, id: id, rank: "Top ${index + 1}"); 
                     },
                   ),
                   const SizedBox(height: 40),
@@ -73,13 +73,25 @@ class TopWisataPage extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [GestureDetector(onTap: () => Navigator.pop(context), child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)), child: const Icon(Icons.arrow_back, color: Colors.black, size: 24))), Image.asset('assets/images/logo_jokka.png', height: 36, fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Text("JOKKA", style: TextStyle(fontWeight: FontWeight.bold))), const SizedBox(width: 42, height: 42)]);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pop(context), 
+          child: Container(
+            padding: const EdgeInsets.all(8), 
+            decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)), 
+            child: const Icon(Icons.arrow_back, color: Colors.black, size: 24)
+          )
+        ), 
+      ]
+    );
   }
 }
 
 class _TopRankHorizontalCard extends StatelessWidget {
   final Map<String, dynamic> data;
-  final String id; // TERIMA ID
+  final String id; 
   final String rank;
 
   const _TopRankHorizontalCard({required this.data, required this.id, required this.rank});
@@ -87,7 +99,7 @@ class _TopRankHorizontalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), // KIRIM ID
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), 
       child: Container(
         width: 160, padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
@@ -107,7 +119,7 @@ class _TopRankHorizontalCard extends StatelessWidget {
 
 class _WisataListCard extends StatelessWidget {
   final Map<String, dynamic> data;
-  final String id; // TERIMA ID
+  final String id; 
   final String rank;
 
   const _WisataListCard({required this.data, required this.id, required this.rank});
@@ -115,7 +127,7 @@ class _WisataListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), // KIRIM ID
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (c) => DetailPlacePage(placeData: data, placeId: id))), 
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)), child: Text(rank, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black54))),
           const SizedBox(height: 8),
