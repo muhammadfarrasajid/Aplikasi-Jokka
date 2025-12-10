@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
@@ -26,6 +27,66 @@ class DetailPlacePage extends StatefulWidget {
 class _DetailPlacePageState extends State<DetailPlacePage> {
   late GoogleMapController mapController;
   final Set<Marker> _markers = {};
+  bool _isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfFavorite();
+  }
+
+  Future<void> _checkIfFavorite() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('favorites')
+          .doc(widget.placeId)
+          .get();
+      if (mounted) {
+        setState(() {
+          _isFavorite = doc.exists;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final ref = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('favorites')
+        .doc(widget.placeId);
+
+    if (_isFavorite) {
+      await ref.delete();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Dihapus dari Wishlist")),
+        );
+      }
+    } else {
+      await ref.set({
+        ...widget.placeData,
+        'addedAt': FieldValue.serverTimestamp(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Ditambahkan ke Wishlist")),
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isFavorite = !_isFavorite;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,36 +138,50 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
               ),
             ),
 
-            actions: userProvider.isAdmin ? [
+            actions: [
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditPlacePage(
-                        placeId: widget.placeId,
-                        currentData: widget.placeData,
+                onTap: _toggleFavorite,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
+                  child: Icon(
+                    _isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: _isFavorite ? Colors.red : Colors.black,
+                  ),
+                ),
+              ),
+              if (userProvider.isAdmin) ...[
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditPlacePage(
+                          placeId: widget.placeId,
+                          currentData: widget.placeData,
+                        ),
                       ),
-                    ),
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
-                  child: const Icon(Icons.edit, color: Colors.blue),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
+                    child: const Icon(Icons.edit, color: Colors.blue),
+                  ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () => _confirmDelete(context),
-                child: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
-                  child: const Icon(Icons.delete, color: Colors.red),
+                GestureDetector(
+                  onTap: () => _confirmDelete(context),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
+                    child: const Icon(Icons.delete, color: Colors.red),
+                  ),
                 ),
-              ),
-            ] : null,
+              ]
+            ],
 
             flexibleSpace: FlexibleSpaceBar(
               background: Image.network(
@@ -290,9 +365,7 @@ class _DetailPlacePageState extends State<DetailPlacePage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-
               await FirebaseFirestore.instance.collection('places').doc(widget.placeId).delete();
-              
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Data berhasil dihapus")));
                 Navigator.pop(context);
